@@ -1,0 +1,31 @@
+# --- data: never commit (donor-level single-cell data, downloads, results) ---
+data/
+validation/data/
+results/
+*.h5ad
+*.h5
+*.h5mu
+*.loom
+*.mtx
+*.mtx.gz
+*.rds
+*.RData
+*.zarr/
+*.tar.gz
+*.zip
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# --- local tooling / editors ---
+.claude/
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

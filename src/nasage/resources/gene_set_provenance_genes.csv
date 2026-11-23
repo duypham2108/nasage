@@ -1,0 +1,156 @@
+module_id,module_name,gene_symbol,n_go_bp_terms,reactome_pathways_mapped,in_anchor_reactome
+M01_epithelial_barrier,Epithelial barrier and junction maintenance,CLDN1,31.0,1.0,True
+M01_epithelial_barrier,Epithelial barrier and junction maintenance,CLDN3,28.0,1.0,True
+M01_epithelial_barrier,Epithelial barrier and junction maintenance,CLDN4,12.0,3.0,True
+M01_epithelial_barrier,Epithelial barrier and junction maintenance,CLDN7,2.0,2.0,True
+M01_epithelial_barrier,Epithelial barrier and junction maintenance,OCLN,18.0,7.0,False
+M01_epithelial_barrier,Epithelial barrier and junction maintenance,TJP1,26.0,8.0,False
+M01_epithelial_barrier,Epithelial barrier and junction maintenance,TJP2,13.0,7.0,False
+M01_epithelial_barrier,Epithelial barrier and junction maintenance,TJP3,6.0,0.0,False
+M01_epithelial_barrier,Epithelial barrier and junction maintenance,CGN,1.0,1.0,False
+M01_epithelial_barrier,Epithelial barrier and junction maintenance,F11R,31.0,4.0,True
+M01_epithelial_barrier,Epithelial barrier and junction maintenance,CDH1,35.0,43.0,False
+M01_epithelial_barrier,Epithelial barrier and junction maintenance,DSP,45.0,8.0,False
+M01_epithelial_barrier,Epithelial barrier and junction maintenance,PKP1,24.0,6.0,False
+M01_epithelial_barrier,Epithelial barrier and junction maintenance,PKP3,29.0,2.0,False
+M01_epithelial_barrier,Epithelial barrier and junction maintenance,JUP,29.0,27.0,False
+M01_epithelial_barrier,Epithelial barrier and junction maintenance,MARVELD2,5.0,0.0,False
+M01_epithelial_barrier,Epithelial barrier and junction maintenance,CLDN23,1.0,1.0,True
+M02_mucociliary_axoneme,Motile ciliary (mucociliary) machinery,FOXJ1,50.0,1.0,True
+M02_mucociliary_axoneme,Motile ciliary (mucociliary) machinery,TPPP3,8.0,0.0,False
+M02_mucociliary_axoneme,Motile ciliary (mucociliary) machinery,CIMAP3,5.0,0.0,False
+M02_mucociliary_axoneme,Motile ciliary (mucociliary) machinery,SPAG6,1.0,0.0,False
+M02_mucociliary_axoneme,Motile ciliary (mucociliary) machinery,DNAH5,8.0,0.0,False
+M02_mucociliary_axoneme,Motile ciliary (mucociliary) machinery,DNAI1,9.0,0.0,False
+M02_mucociliary_axoneme,Motile ciliary (mucociliary) machinery,DNAI2,6.0,0.0,False
+M02_mucociliary_axoneme,Motile ciliary (mucociliary) machinery,DNAH9,4.0,0.0,False
+M02_mucociliary_axoneme,Motile ciliary (mucociliary) machinery,RSPH1,6.0,0.0,False
+M02_mucociliary_axoneme,Motile ciliary (mucociliary) machinery,RSPH4A,9.0,0.0,False
+M02_mucociliary_axoneme,Motile ciliary (mucociliary) machinery,RSPH9,13.0,0.0,False
+M02_mucociliary_axoneme,Motile ciliary (mucociliary) machinery,CFAP43,8.0,0.0,False
+M02_mucociliary_axoneme,Motile ciliary (mucociliary) machinery,CFAP53,8.0,0.0,False
+M02_mucociliary_axoneme,Motile ciliary (mucociliary) machinery,HYDIN,2.0,0.0,False
+M02_mucociliary_axoneme,Motile ciliary (mucociliary) machinery,SPEF2,8.0,0.0,False
+M02_mucociliary_axoneme,Motile ciliary (mucociliary) machinery,TEKT1,5.0,0.0,False
+M02_mucociliary_axoneme,Motile ciliary (mucociliary) machinery,CCDC39,20.0,0.0,False
+M02_mucociliary_axoneme,Motile ciliary (mucociliary) machinery,CCDC40,21.0,0.0,False
+M02_mucociliary_axoneme,Motile ciliary (mucociliary) machinery,DNALI1,2.0,0.0,False
+M02_mucociliary_axoneme,Motile ciliary (mucociliary) machinery,IFT81,13.0,1.0,True
+M02b_airway_mucin_panel,Airway mucin / secretory product panel (small panel),MUC5AC,0.0,4.0,True
+M02b_airway_mucin_panel,Airway mucin / secretory product panel (small panel),MUC5B,1.0,4.0,True
+M02b_airway_mucin_panel,Airway mucin / secretory product panel (small panel),SCGB1A1,11.0,0.0,False
+M02b_airway_mucin_panel,Airway mucin / secretory product panel (small panel),BPIFA1,19.0,1.0,False
+M02b_airway_mucin_panel,Airway mucin / secretory product panel (small panel),BPIFB1,4.0,1.0,False
+M03_pigr_antibody_transport,Polymeric antibody transport (PIGR gene-level feature),PIGR,7.0,1.0,
+M03b_fcgrt_igg_transport,FcRn IgG transport (gene-level feature),FCGRT,2.0,0.0,
+M04_innate_sensing,Innate pathogen sensing (constitutive receptors and proximal adaptors),TLR2,47.0,10.0,True
+M04_innate_sensing,Innate pathogen sensing (constitutive receptors and proximal adaptors),TLR4,124.0,20.0,True
+M04_innate_sensing,Innate pathogen sensing (constitutive receptors and proximal adaptors),TLR5,7.0,3.0,False
+M04_innate_sensing,Innate pathogen sensing (constitutive receptors and proximal adaptors),TLR7,38.0,7.0,False
+M04_innate_sensing,Innate pathogen sensing (constitutive receptors and proximal adaptors),STING1,53.0,6.0,True
+M04_innate_sensing,Innate pathogen sensing (constitutive receptors and proximal adaptors),NOD1,32.0,22.0,True
+M04_innate_sensing,Innate pathogen sensing (constitutive receptors and proximal adaptors),NOD2,66.0,22.0,True
+M04_innate_sensing,Innate pathogen sensing (constitutive receptors and proximal adaptors),NLRP3,39.0,4.0,False
+M04_innate_sensing,Innate pathogen sensing (constitutive receptors and proximal adaptors),MAVS,48.0,8.0,False
+M04_innate_sensing,Innate pathogen sensing (constitutive receptors and proximal adaptors),TICAM1,36.0,23.0,True
+M04_innate_sensing,Innate pathogen sensing (constitutive receptors and proximal adaptors),MYD88,71.0,22.0,True
+M04_innate_sensing,Innate pathogen sensing (constitutive receptors and proximal adaptors),TBK1,43.0,27.0,True
+M04_innate_sensing,Innate pathogen sensing (constitutive receptors and proximal adaptors),IRF3,36.0,20.0,True
+M04_innate_sensing,Innate pathogen sensing (constitutive receptors and proximal adaptors),TRAF3,28.0,14.0,True
+M04_innate_sensing,Innate pathogen sensing (constitutive receptors and proximal adaptors),TLR9,70.0,13.0,False
+M05_interferon_stimulated_genes,Interferon-stimulated genes (type I and III interferon response),ISG15,33.0,7.0,True
+M05_interferon_stimulated_genes,Interferon-stimulated genes (type I and III interferon response),IFI6,13.0,2.0,True
+M05_interferon_stimulated_genes,Interferon-stimulated genes (type I and III interferon response),IFI44L,3.0,1.0,False
+M05_interferon_stimulated_genes,Interferon-stimulated genes (type I and III interferon response),IFIT1,13.0,3.0,True
+M05_interferon_stimulated_genes,Interferon-stimulated genes (type I and III interferon response),IFIT2,9.0,2.0,True
+M05_interferon_stimulated_genes,Interferon-stimulated genes (type I and III interferon response),IFIT3,7.0,2.0,True
+M05_interferon_stimulated_genes,Interferon-stimulated genes (type I and III interferon response),MX1,13.0,2.0,True
+M05_interferon_stimulated_genes,Interferon-stimulated genes (type I and III interferon response),MX2,9.0,2.0,True
+M05_interferon_stimulated_genes,Interferon-stimulated genes (type I and III interferon response),OAS1,32.0,4.0,True
+M05_interferon_stimulated_genes,Interferon-stimulated genes (type I and III interferon response),OAS2,19.0,4.0,True
+M05_interferon_stimulated_genes,Interferon-stimulated genes (type I and III interferon response),OAS3,23.0,4.0,True
+M05_interferon_stimulated_genes,Interferon-stimulated genes (type I and III interferon response),OASL,12.0,3.0,True
+M05_interferon_stimulated_genes,Interferon-stimulated genes (type I and III interferon response),RSAD2,19.0,1.0,True
+M05_interferon_stimulated_genes,Interferon-stimulated genes (type I and III interferon response),STAT1,54.0,32.0,True
+M05_interferon_stimulated_genes,Interferon-stimulated genes (type I and III interferon response),STAT2,21.0,3.0,True
+M05_interferon_stimulated_genes,Interferon-stimulated genes (type I and III interferon response),IRF7,35.0,17.0,True
+M05_interferon_stimulated_genes,Interferon-stimulated genes (type I and III interferon response),IRF9,7.0,2.0,True
+M05_interferon_stimulated_genes,Interferon-stimulated genes (type I and III interferon response),BST2,17.0,2.0,True
+M05_interferon_stimulated_genes,Interferon-stimulated genes (type I and III interferon response),XAF1,3.0,1.0,True
+M05_interferon_stimulated_genes,Interferon-stimulated genes (type I and III interferon response),HERC5,11.0,6.0,False
+M05_interferon_stimulated_genes,Interferon-stimulated genes (type I and III interferon response),USP18,11.0,21.0,True
+M05_interferon_stimulated_genes,Interferon-stimulated genes (type I and III interferon response),IFITM3,17.0,1.0,True
+M06_mhc_I_processing,MHC class I antigen processing and peptide loading,PSMB8,15.0,5.0,False
+M06_mhc_I_processing,MHC class I antigen processing and peptide loading,PSMB9,15.0,4.0,False
+M06_mhc_I_processing,MHC class I antigen processing and peptide loading,PSMB10,17.0,4.0,False
+M06_mhc_I_processing,MHC class I antigen processing and peptide loading,TAP1,11.0,2.0,True
+M06_mhc_I_processing,MHC class I antigen processing and peptide loading,TAP2,14.0,2.0,True
+M06_mhc_I_processing,MHC class I antigen processing and peptide loading,TAPBP,12.0,2.0,True
+M06_mhc_I_processing,MHC class I antigen processing and peptide loading,B2M,38.0,9.0,True
+M06_mhc_I_processing,MHC class I antigen processing and peptide loading,HLA-A,30.0,7.0,True
+M06_mhc_I_processing,MHC class I antigen processing and peptide loading,HLA-B,19.0,9.0,True
+M06_mhc_I_processing,MHC class I antigen processing and peptide loading,HLA-C,12.0,8.0,True
+M06_mhc_I_processing,MHC class I antigen processing and peptide loading,ERAP1,16.0,1.0,True
+M06_mhc_I_processing,MHC class I antigen processing and peptide loading,ERAP2,9.0,1.0,True
+M06_mhc_I_processing,MHC class I antigen processing and peptide loading,CALR,49.0,9.0,True
+M06_mhc_I_processing,MHC class I antigen processing and peptide loading,CANX,10.0,12.0,True
+M06_mhc_I_processing,MHC class I antigen processing and peptide loading,NLRC5,14.0,19.0,False
+M07_mhc_II_presentation,MHC class II antigen processing and presentation,CD74,57.0,3.0,True
+M07_mhc_II_presentation,MHC class II antigen processing and presentation,HLA-DRA,18.0,10.0,True
+M07_mhc_II_presentation,MHC class II antigen processing and presentation,HLA-DRB1,38.0,9.0,True
+M07_mhc_II_presentation,MHC class II antigen processing and presentation,HLA-DPA1,12.0,9.0,True
+M07_mhc_II_presentation,MHC class II antigen processing and presentation,HLA-DPB1,12.0,9.0,True
+M07_mhc_II_presentation,MHC class II antigen processing and presentation,HLA-DQA1,7.0,9.0,True
+M07_mhc_II_presentation,MHC class II antigen processing and presentation,HLA-DQB1,10.0,9.0,True
+M07_mhc_II_presentation,MHC class II antigen processing and presentation,HLA-DMA,7.0,3.0,True
+M07_mhc_II_presentation,MHC class II antigen processing and presentation,HLA-DMB,12.0,3.0,True
+M07_mhc_II_presentation,MHC class II antigen processing and presentation,CIITA,20.0,1.0,False
+M07_mhc_II_presentation,MHC class II antigen processing and presentation,CTSS,25.0,16.0,True
+M07_mhc_II_presentation,MHC class II antigen processing and presentation,LGMN,37.0,3.0,True
+M08_apc_costimulation,Professional APC costimulation and maturation,CD80,14.0,8.0,True
+M08_apc_costimulation,Professional APC costimulation and maturation,CD86,18.0,9.0,True
+M08_apc_costimulation,Professional APC costimulation and maturation,CD40,30.0,4.0,True
+M08_apc_costimulation,Professional APC costimulation and maturation,CD83,6.0,0.0,False
+M08_apc_costimulation,Professional APC costimulation and maturation,ICOSLG,9.0,2.0,False
+M08_apc_costimulation,Professional APC costimulation and maturation,TNFSF9,8.0,2.0,True
+M08_apc_costimulation,Professional APC costimulation and maturation,CD70,16.0,2.0,True
+M08_apc_costimulation,Professional APC costimulation and maturation,TNFSF4,42.0,2.0,True
+M08_apc_costimulation,Professional APC costimulation and maturation,RELB,16.0,7.0,True
+M08_apc_costimulation,Professional APC costimulation and maturation,NFKB2,13.0,36.0,True
+M08_apc_costimulation,Professional APC costimulation and maturation,CCR7,69.0,4.0,False
+M08_apc_costimulation,Professional APC costimulation and maturation,LAMP3,7.0,0.0,False
+M09_plasma_secretory_machinery,Plasma-cell secretory machinery,PRDM1,13.0,10.0,True
+M09_plasma_secretory_machinery,Plasma-cell secretory machinery,XBP1,87.0,4.0,False
+M09_plasma_secretory_machinery,Plasma-cell secretory machinery,IRF4,20.0,6.0,True
+M09_plasma_secretory_machinery,Plasma-cell secretory machinery,DERL3,11.0,5.0,False
+M09_plasma_secretory_machinery,Plasma-cell secretory machinery,MZB1,13.0,0.0,False
+M09_plasma_secretory_machinery,Plasma-cell secretory machinery,SEC11C,5.0,9.0,False
+M09_plasma_secretory_machinery,Plasma-cell secretory machinery,SSR4,1.0,1.0,False
+M09_plasma_secretory_machinery,Plasma-cell secretory machinery,FKBP11,0.0,0.0,False
+M09_plasma_secretory_machinery,Plasma-cell secretory machinery,TNFRSF17,2.0,2.0,False
+M10_iga_fraction,IgA share of immunoglobulin heavy-chain transcripts (ratio feature),IGHA1,,,
+M10_iga_fraction,IgA share of immunoglobulin heavy-chain transcripts (ratio feature),IGHA2,,,
+M10_iga_fraction,IgA share of immunoglobulin heavy-chain transcripts (ratio feature),IGHG1,,,
+M10_iga_fraction,IgA share of immunoglobulin heavy-chain transcripts (ratio feature),IGHG2,,,
+M10_iga_fraction,IgA share of immunoglobulin heavy-chain transcripts (ratio feature),IGHG3,,,
+M10_iga_fraction,IgA share of immunoglobulin heavy-chain transcripts (ratio feature),IGHG4,,,
+M10_iga_fraction,IgA share of immunoglobulin heavy-chain transcripts (ratio feature),IGHM,,,
+M11_senescence_arrest,Senescence-associated cell-cycle arrest,CDKN1A,,,
+M11_senescence_arrest,Senescence-associated cell-cycle arrest,CDKN2A,,,
+M11_senescence_arrest,Senescence-associated cell-cycle arrest,SERPINE1,,,
+M11_senescence_arrest,Senescence-associated cell-cycle arrest,IGFBP7,,,
+M11_senescence_arrest,Senescence-associated cell-cycle arrest,GDF15,,,
+M12_inflammatory_sasp,Inflammatory cytokines (SASP / inflammaging core),IL6,,,
+M12_inflammatory_sasp,Inflammatory cytokines (SASP / inflammaging core),IL1A,,,
+M12_inflammatory_sasp,Inflammatory cytokines (SASP / inflammaging core),IL1B,,,
+M12_inflammatory_sasp,Inflammatory cytokines (SASP / inflammaging core),CXCL8,,,
+M12_inflammatory_sasp,Inflammatory cytokines (SASP / inflammaging core),CXCL1,,,
+M12_inflammatory_sasp,Inflammatory cytokines (SASP / inflammaging core),CCL2,,,
+M12_inflammatory_sasp,Inflammatory cytokines (SASP / inflammaging core),TNF,,,
+M13_trm_core,Tissue-resident memory T-cell core programme,CD69,,,
+M13_trm_core,Tissue-resident memory T-cell core programme,ITGAE,,,
+M13_trm_core,Tissue-resident memory T-cell core programme,ITGA1,,,
+M13_trm_core,Tissue-resident memory T-cell core programme,CXCR6,,,
+M13_trm_core,Tissue-resident memory T-cell core programme,PDCD1,,,
+M13_trm_core,Tissue-resident memory T-cell core programme,CRTAM,,,
+M13_trm_core,Tissue-resident memory T-cell core programme,DUSP6,,,
