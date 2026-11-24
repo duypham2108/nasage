@@ -62,6 +62,9 @@ def load(cfg):
         src_col, mapping = cfg["age_map"]["column"], cfg["age_map"]["map"]
         a.obs[cfg["age_key"]] = pd.Categorical(
             a.obs[src_col].astype(str).map(mapping), categories=cfg.get("age_order"))
+    if cfg.get("age_numeric_from"):              # e.g. a string column of ages in years
+        a.obs[cfg["age_key"]] = pd.to_numeric(a.obs[cfg["age_numeric_from"]].astype(str),
+                                              errors="coerce")
     if cfg.get("age_from_development_stage"):
         m = a.obs["development_stage"].astype(str).str.extract(r"(\d+)-year-old")[0]
         a.obs["age_years"] = pd.to_numeric(m, errors="coerce")
@@ -93,7 +96,9 @@ def main():
     log("age effects"); om = nas.tl.age_effects(a, reference=cfg["reference"])
     log("composition"); nas.tl.composition(a)
     log("permutation null"); nas.tl.permutation_null(a, n_perm=cfg.get("n_perm", 200))
-    log("random-gene-set null"); nas.tl.null_control(a, n_sets=cfg.get("n_null", 50), n_jobs=8)
+    log("random-gene-set null")
+    nas.tl.null_control(a, n_sets=cfg.get("n_null", 50), n_jobs=8,
+                        tiers=tuple(cfg.get("null_tiers", ("primary", "exploratory"))))
     nas.write_report(a, out, label=cfg["name"])
 
     st = a.uns["nasage"]

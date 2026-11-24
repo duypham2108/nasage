@@ -142,7 +142,10 @@ def contrast(df, col, alt):
     d = df[[col, "carriage", "age", "sex", "smoker", "log10_reads"]].dropna().copy()
     d["y"] = d[col]
     d["pos"] = (d.carriage == "POS").astype(int)
-    fit = smf.ols("y ~ pos + age + C(sex) + C(smoker) + log10_reads", data=d).fit()
+    # dummies built by hand: patsy's C() would collide with the counts matrix named C
+    d["male"] = (d.sex.str.lower() == "male").astype(int)
+    d["smk"] = (d.smoker.str.upper().str[0] == "Y").astype(int)
+    fit = smf.ols("y ~ pos + age + male + smk + log10_reads", data=d).fit()
     t, p2 = fit.tvalues["pos"], fit.pvalues["pos"]
     p1 = p2 / 2 if ((t > 0) == (alt == "greater")) else 1 - p2 / 2
     ci = fit.conf_int().loc["pos"]
