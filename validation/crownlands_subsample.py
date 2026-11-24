@@ -1,0 +1,130 @@
+"""Step 2 of docs/PREREG_crownlands_age.md: build and save the fixed cell subsample.
+
+Single sequential pass over the 27.65 GB CSR matrix, keeping only the pre-selected rows and
+writing them incrementally to a small h5ad. Nothing here computes a score or a p-value.
+
+Fixed by the plan, not by this script:
+  * healthy donors only (disease == "normal");
+  * primary cell types basal / secretory / ciliated, per the plan's mapping;
+  * at most CAP cells per donor x cell type, drawn without replacement with rng(SEED);
+  * a donor contributes to a cell type only with >= 20 cells of it.
+
+Usage: python validation/crownlands_subsample.py <in.h5ad> <out.h5ad> [cap] [seed]
+"""
+import sys
+import h5py
+import numpy as np
+import pandas as pd
+
+IN, OUT = sys.argv[1], sys.argv[2]
+CAP = int(sys.argv[3]) if len(sys.argv) > 3 else 500
+SEED = int(sys.argv[4]) if len(sys.argv) > 4 else 0
+MIN_CELLS = 20
+
+MAPPING = {
+    "respiratory basal cell": "basal",
+    "mucus secreting cell": "secretory",
+    "secretory cell": "secretory",
+    "multiciliated epithelial cell": "ciliated",
+}
+
+f = h5py.File(IN, "r")
+
+
+def col(name):
+    g = f["obs"][name]
+    if isinstance(g, h5py.Group):
+        cats = np.array([x.decode() if isinstance(x, bytes) else x
+                         for x in g["categories"][:]])
+        return cats[g["codes"][:]]
+    v = g[:]
+    return np.array([x.decode() if isinstance(x, bytes) else x for x in v])
+
+
+donor = col("donor_id")
+disease = col("disease")
+ctype = col("cell_type")
+stage = col("development_stage")
+sex = col("sex")
+
+obs = pd.DataFrame({"donor": donor, "disease": disease, "cell_type_raw": ctype,
+                    "stage": stage, "sex": sex})
+obs["ct"] = pd.Series(ctype).map(MAPPING).values
+obs["age"] = pd.Series(stage).str.extract(r"(\d+)-year-old")[0].astype(float).values
+
+elig = (obs.disease == "normal") & obs.ct.notna()
+print(f"total cells {len(obs):,}; healthy {int((obs.disease=='normal').sum()):,}; "
+      f"healthy in primary cell types {int(elig.sum()):,}")
+print(f"donors: all {obs.donor.nunique()}, healthy {obs.loc[obs.disease=='normal','donor'].nunique()}")
+
+rng = np.random.default_rng(SEED)
+pick, dropped = [], []
+for (d, c), idx in obs[elig].groupby(["donor", "ct"], observed=True).groups.items():
+    idx = np.asarray(idx)
+    if len(idx) < MIN_CELLS:
+        dropped.append((d, c, len(idx)))
+        continue
+    pick.append(idx if len(idx) <= CAP else rng.choice(idx, CAP, replace=False))
+sel = np.sort(np.concatenate(pick))
+print(f"\nselected {len(sel):,} cells (cap {CAP}, seed {SEED})")
+print(f"donor x cell-type groups dropped for < {MIN_CELLS} cells: {len(dropped)}")
+
+sub = obs.iloc[sel].copy()
+bins = pd.cut(sub.age, [17, 39, 64, 200], labels=["18-39", "40-64", "65+"])
+sub["age_bin"] = bins.values
+print("\ncells per cell type:\n", sub.ct.value_counts().to_string())
+print("\ndonors per cell type:\n", sub.groupby("ct").donor.nunique().to_string())
+print("\ndonors per cell type x age bin:")
+print(sub.drop_duplicates(["donor", "ct"]).pivot_table(
+    index="ct", columns="age_bin", values="donor", aggfunc="count", observed=False).to_string())
+
+# ---------------------------------------------------------------- extract rows
+X = f["X"]
+indptr = X["indptr"][:].astype(np.int64)
+n_genes = int(X.attrs["shape"][1])
+keep = np.zeros(len(indptr) - 1, bool)
+keep[sel] = True
+new_pos = np.full(len(keep), -1, np.int64)
+new_pos[sel] = np.arange(len(sel))
+
+out = h5py.File(OUT, "w")
+gd = out.create_dataset("X/data", (0,), maxshape=(None,), dtype="float32",
+                        chunks=(1 << 20,), compression="lzf")
+gi = out.create_dataset("X/indices", (0,), maxshape=(None,), dtype="int32",
+                        chunks=(1 << 20,), compression="lzf")
+rowlen = np.zeros(len(sel), np.int64)
+
+CH = 50000
+written = 0
+for s in range(0, len(keep), CH):
+    e = min(s + CH, len(keep))
+    m = keep[s:e]
+    if not m.any():
+        continue
+    lo, hi = indptr[s], indptr[e]
+    dat = X["data"][lo:hi]
+    ind = X["indices"][lo:hi]
+    lens = np.diff(indptr[s:e + 1])
+    starts = np.concatenate([[0], np.cumsum(lens)])
+    rows = np.flatnonzero(m)
+    take = np.concatenate([np.arange(starts[r], starts[r + 1]) for r in rows])
+    gd.resize((written + len(take),)); gd[written:] = dat[take].astype("float32")
+    gi.resize((written + len(take),)); gi[written:] = ind[take].astype("int32")
+    rowlen[new_pos[s + rows]] = lens[rows]
+    written += len(take)
+    print(f"  {e:,}/{len(keep):,}  nnz {written:,}", flush=True)
+
+out.create_dataset("X/indptr", data=np.concatenate([[0], np.cumsum(rowlen)]).astype("int64"))
+out["X"].attrs["encoding-type"] = "csr_matrix"
+out["X"].attrs["encoding-version"] = "0.1.0"
+out["X"].attrs["shape"] = np.array([len(sel), n_genes], "int64")
+out.attrs["cap"], out.attrs["seed"] = CAP, SEED
+
+var_idx = f["var"]["_index"][:]
+out.create_dataset("var_index", data=var_idx)
+for c in ("donor", "ct", "age", "age_bin", "sex", "cell_type_raw"):
+    v = sub[c].astype(str).values
+    out.create_dataset(f"obs/{c}", data=np.array(v, dtype=h5py.string_dtype()))
+out.close()
+print(f"\nwrote {OUT}: {len(sel):,} cells x {n_genes:,} genes, nnz {written:,}")
+sub.to_csv(OUT.replace(".h5ad", "_obs.csv"), index=False)
