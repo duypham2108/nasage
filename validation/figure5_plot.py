@@ -91,9 +91,9 @@ aw = pd.read_csv(R / "loske2022_v2" / "age_effects_with_null.csv")
 CTS = ["basal", "secretory", "ciliated"]
 
 # ================================================================ MAIN FIGURE 5
-fig = plt.figure(figsize=(180 * MM, 128 * MM))
-gs = GridSpec(2, 6, figure=fig, height_ratios=[1.0, 1.0], hspace=0.42, wspace=1.25,
-              left=0.075, right=0.985, top=0.930, bottom=0.095)
+fig = plt.figure(figsize=(180 * MM, 196 * MM))
+gs = GridSpec(3, 6, figure=fig, height_ratios=[1.0, 1.0, 1.15], hspace=0.52, wspace=1.25,
+              left=0.075, right=0.985, top=0.952, bottom=0.060)
 
 # -- a: M02 vs age
 ax = fig.add_subplot(gs[0, 0:2])
@@ -165,6 +165,69 @@ for k, (mod, col, lab, ltr, span) in enumerate((
     letter(ax, ltr, dx=-0.175)
     ax.set_title("Childhood contrast replicates (Loske 2022)" if k == 0
                  else "A second module, same direction", pad=6, loc="left")
+
+# -- f: programme x cell type, the specificity matrix
+cs = pd.read_csv(R / "celltype_spec" / "donor_celltype_scores.csv")
+cm = pd.read_csv(R / "celltype_spec" / "meta.csv").set_index("program")
+PROGS = ["P1_basal_progenitor_repair", "P3_secretory_antimicrobial", "P4_iga_transport",
+         "P5_mucin_barrier", "P7_ciliary_beat_machinery", "P6_entry_factor_availability"]
+PLAB = ["P1 basal\nprogenitor", "P3 secretory\nantimicrobial", "P4 IgA\ntransport",
+        "P5 mucin\nbarrier", "P7 ciliary\nbeat", "P6 entry\nfactors"]
+OWN = ["Basal", "Secretory", "Secretory", "Secretory", "Ciliated", "Ciliated"]
+FAMS = ["Basal", "Secretory", "Ciliated"]
+
+ax = fig.add_subplot(gs[2, 0:3])
+Mx = np.array([[cs.loc[cs.__fam == f, p].mean() for f in FAMS] for p in PROGS])
+im = ax.imshow(Mx, cmap="RdBu_r", vmin=-np.abs(Mx).max(), vmax=np.abs(Mx).max(),
+               aspect="auto")
+ax.set_xticks(range(3)); ax.set_xticklabels(FAMS, fontsize=6.5)
+ax.set_yticks(range(len(PROGS))); ax.set_yticklabels(PLAB, fontsize=5.8, linespacing=1.3)
+for i, p in enumerate(PROGS):
+    j = FAMS.index(OWN[i])
+    ok = cm.loc[p, "verdict"].startswith("SPECIFIC")
+    ax.add_patch(plt.Rectangle((j - .5, i - .5), 1, 1, fill=False,
+                               edgecolor=INK if ok else ORANGE,
+                               lw=1.6 if ok else 1.8,
+                               ls="-" if ok else (0, (2, 1.4)), zorder=5))
+ax.text(0.0, -0.17, "box = the cell type the programme was curated for; "
+                    "dashed orange = misassigned",
+        transform=ax.transAxes, fontsize=5.4, color=MUTED, ha="left", va="top")
+cb = fig.colorbar(im, ax=ax, fraction=0.035, pad=0.02)
+cb.set_label("mean programme score (z)", fontsize=5.6)
+cb.ax.tick_params(labelsize=5.4)
+letter(ax, "f", dx=-0.13, dy=1.14)
+ax.set_title("Programmes score highest in their own cell type", pad=6, loc="left")
+
+# -- g: specificity contrast, own cell type vs the other two
+ax = fig.add_subplot(gs[2, 3:6])
+ypos = np.arange(len(PROGS))[::-1]
+for yy, p in zip(ypos, PROGS):
+    r = cm.loc[p]
+    spec = r.verdict.startswith("SPECIFIC")
+    col = INK if spec else ORANGE
+    ax.plot([r.ci_lo, r.ci_hi], [yy, yy], color=col, lw=1.2, zorder=3,
+            solid_capstyle="butt")
+    ax.scatter([r.smd], [yy], s=22, facecolor=col, edgecolor="white", linewidth=0.5,
+               zorder=4)
+ax.axvline(0, color=GREY, lw=0.8, ls=(0, (2, 2)), zorder=1)
+ax.set_yticks(ypos)
+ax.set_yticklabels([])          # rows are in the same order as panel f
+ax.set_ylim(-0.9, len(PROGS) - 0.2)
+ax.tick_params(axis="y", length=0)
+ax.set_xlabel("own cell type − other two (SMD)")
+ax.set_xlim(-3.2, 7.6)
+for _yy, _p in zip(ypos, PROGS):
+    _r = cm.loc[_p]
+    ax.text(7.4, _yy, f"{_r.smd:+.2f}", fontsize=5.8, ha="right", va="center",
+            color=INK if _r.verdict.startswith("SPECIFIC") else ORANGE)
+ax.text(7.4, ypos[-1] - 0.58, "misassigned", fontsize=5.5, color=ORANGE, ha="right",
+        va="center")
+ax.text(0.01, 0.99, "rows as in f · 3 cohorts, 224 donor × cell-type units\nsign unanimous in "
+                    "every programme and cohort",
+        transform=ax.transAxes, fontsize=5.4, color=MUTED, va="top", ha="left",
+        linespacing=1.5)
+letter(ax, "g", dx=-0.10, dy=1.14)
+ax.set_title("Five specific, one points the wrong way", pad=6, loc="left")
 
 fig.savefig(OUT / "figure5.pdf", dpi=600)
 fig.savefig(OUT / "figure5.png", dpi=400)

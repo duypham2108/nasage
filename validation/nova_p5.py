@@ -22,12 +22,17 @@ import statsmodels.api as sm
 from scipy import stats
 
 from mvri_programs import PROGRAMS, PROXY
+# Opt-in epithelial-only restriction (docs/PREREG_epithelial_only.md, locked 198e01b).
+# Default behaviour is unchanged, so v1 results stay exactly reproducible.
+if __import__("os").environ.get("NASAGE_EPI_PROGRAMS") == "1":
+    from mvri_programs_epi import PROGRAMS_EPI as PROGRAMS
+    print("[epithelial-only restriction ACTIVE] programmes:", sorted(PROGRAMS))
 
 warnings.filterwarnings("ignore")
 DATA, OUT = Path(sys.argv[1]), Path(sys.argv[2])
 OUT.mkdir(parents=True, exist_ok=True)
 N_SETS, N_BINS, N_PERM, MIN_COVER = 500, 25, 2000, 0.60
-PRIMARY = "P5_mucin_barrier"
+PRIMARY = "P5_mucin_barrier_epi" if "P5_mucin_barrier_epi" in PROGRAMS else "P5_mucin_barrier"
 EXCLUDE = {"P2_junction_integrity"}          # plan 4.1: Jaccard 0.824 with M01, dropped a priori
 
 

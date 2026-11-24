@@ -19,7 +19,12 @@ from scipy import stats
 import statsmodels.api as sm
 
 sys.path.insert(0, str(Path(__file__).parent))
-from mvri_programs import PROGRAMS, PROXY  # noqa: E402
+from mvri_programs import PROGRAMS, PROXY
+# Opt-in epithelial-only restriction (docs/PREREG_epithelial_only.md, locked 198e01b).
+# Default behaviour is unchanged, so v1 results stay exactly reproducible.
+if __import__("os").environ.get("NASAGE_EPI_PROGRAMS") == "1":
+    from mvri_programs_epi import PROGRAMS_EPI as PROGRAMS
+    print("[epithelial-only restriction ACTIVE] programmes:", sorted(PROGRAMS))  # noqa: E402
 
 DATA, OUT = Path(sys.argv[1]), Path(sys.argv[2])
 OUT.mkdir(parents=True, exist_ok=True)

@@ -56,6 +56,22 @@ three epithelial types.
 
 ---
 
+**(f)** Mean programme score per epithelial family, pooled over 224 donor × cell-type units
+from three single-cell nasal cohorts (Ziegler 2021 n = 105, Loske 2022 n = 103, Xu 2022 n = 16;
+minimum 20 cells per donor × cell type). Solid box, the cell type the programme was curated for;
+dashed orange, the one that is misassigned.
+
+**(g)** Own cell type minus the mean of the other two, standardised mean difference, fixed-effect
+meta-analysis across the three cohorts; bars, 95% CI. Five of six programmes are specific to
+their curated cell type (BH < 0.05, sign unanimous in every cohort, all clearing a 500-draw
+expression-matched null). **P6 entry-factor availability is significantly LOWER in ciliated
+cells** (SMD −1.66, I² = 0) and also fails its matched null, so it is misassigned and loses its
+cell-type label. Effect sizes of 2–4 are partly tautological — curated cell-type genes should be
+enriched in that cell type — so this is a validation that the labels are correct, not a
+discovery; its value is that the test could fail, and for P6 it did.
+
+---
+
 ## Supplementary Figure S5 — draft legend
 
 **Supplementary Figure S5. Nulls, measurement limits, and the pre-registered outcome tests.**
@@ -140,6 +156,7 @@ pre-specified primary analysis.
 | S5d | `results/pneumo_gse261277/PREREG_RESULTS.md`, `results/laiv_gambia/go_vs_outcomes.csv`, `results/nova/primary.csv` |
 | S5e | `results/nova/forest_three_cohort.csv` |
 | S5f | `results/nova/matched_null_draws.csv`, `results/nova/primary.csv` |
+| 5f, 5g | `results/celltype_spec/donor_celltype_scores.csv`, `results/celltype_spec/meta.csv` |
 
 `validation/figure5_data.py` regenerates the 500 matched-null draws behind panel 5c. It re-runs
 the control exactly as originally reported — same module order, seed, bins and model — and asserts

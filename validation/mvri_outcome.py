@@ -20,6 +20,11 @@ import statsmodels.api as sm
 from scipy import stats
 
 from mvri_programs import PROGRAMS, PROXY
+# Opt-in epithelial-only restriction (docs/PREREG_epithelial_only.md, locked 198e01b).
+# Default behaviour is unchanged, so v1 results stay exactly reproducible.
+if __import__("os").environ.get("NASAGE_EPI_PROGRAMS") == "1":
+    from mvri_programs_epi import PROGRAMS_EPI as PROGRAMS
+    print("[epithelial-only restriction ACTIVE] programmes:", sorted(PROGRAMS))
 
 warnings.filterwarnings("ignore")
 DATA, SYMMAP, OUT = Path(sys.argv[1]), sys.argv[2], Path(sys.argv[3])
