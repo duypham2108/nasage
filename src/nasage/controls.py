@@ -31,10 +31,23 @@ def gene_expression_bins(X, var_names, cells_mask=None, n_bins=25) -> pd.Series:
         X = X[np.asarray(cells_mask)]
     lib = np.maximum(np.asarray(X.sum(1)).ravel(), 1)
     if sp.issparse(X):
-        norm = sp.diags(1e4 / lib) @ X
-        norm = norm.tocsr(copy=True)
-        norm.data = np.log1p(norm.data)
-        mean = np.asarray(norm.mean(0)).ravel()
+        # Accumulate the per-gene sum of log1p(CP10K) straight off the stored values.
+        # Scaling the matrix first (diags @ X) would allocate a second copy of every
+        # stored element, which is several GB on a large cohort.
+        Xc = X.tocsr() if not sp.isspmatrix_csr(X) else X
+        n_rows, n_cols = Xc.shape
+        acc = np.zeros(n_cols)
+        step = max(1, int(2e7 // max(1, Xc.nnz // max(n_rows, 1) + 1)))
+        for s in range(0, n_rows, step):
+            e = min(s + step, n_rows)
+            lo, hi = Xc.indptr[s], Xc.indptr[e]
+            if hi == lo:
+                continue
+            rows = np.repeat(np.arange(s, e), np.diff(Xc.indptr[s:e + 1]))
+            acc += np.bincount(Xc.indices[lo:hi],
+                               weights=np.log1p(Xc.data[lo:hi] * (1e4 / lib)[rows]),
+                               minlength=n_cols)
+        mean = acc / n_rows
     else:
         mean = np.log1p(np.asarray(X) * (1e4 / lib)[:, None]).mean(0)
     s = pd.Series(mean, index=pd.Index(map(str, var_names)))
@@ -68,8 +81,14 @@ def matched_null_sets(module_genes: dict, bins: pd.Series, n_sets=50, seed=0,
 def run_null_control(adata, obs: pd.DataFrame, summary: pd.DataFrame, omnibus: pd.DataFrame,
                      modules_mapped: dict, layer=None, n_sets=50, seed=0, n_bins=25,
                      min_cells=10, statistic="auto", reference=None, n_jobs=1,
-                     adjust_depth=True, adjust_subtypes=True) -> tuple[pd.DataFrame, pd.DataFrame]:
+                     adjust_depth=True, adjust_subtypes=True,
+                     tiers=("primary", "exploratory")) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Score, aggregate and test matched random gene sets for every tested UCell pair.
+
+    `tiers` limits the control to pairs of those tiers. Only cells of the tested
+    cell types are scored; UCell ranks genes within each cell, so their scores
+    do not depend on which other cells are present. Expression bins for gene
+    matching still use all analysed cells.
 
     Returns (per-pair comparison table, all null-set test results).
     """
@@ -77,7 +96,10 @@ def run_null_control(adata, obs: pd.DataFrame, summary: pd.DataFrame, omnibus: p
     from pyucell import compute_ucell_scores
 
     tested = omnibus[omnibus.estimable.astype(bool)
-                     & omnibus.score_column.str.endswith("_UCell")]
+                     & omnibus.score_column.str.endswith("_UCell")
+                     & omnibus.tier.isin(list(tiers))]
+    if tested.empty:
+        raise ValueError(f"no estimable UCell pairs in tiers {tuple(tiers)}")
     mods = sorted(set(tested.module_id))
     X = adata.X if layer is None else adata.layers[layer]
     in_obs = adata.obs_names.isin(obs.index)
@@ -86,11 +108,14 @@ def run_null_control(adata, obs: pd.DataFrame, summary: pd.DataFrame, omnibus: p
                              seed=seed)
 
     # score on a bare AnnData so the user's adata.obs is not filled with null columns
-    tmp = ad.AnnData(X=X[in_obs], obs=pd.DataFrame(index=adata.obs_names[in_obs]),
+    cts = set(tested.cell_type.astype(str))
+    score_ids = obs.index[obs.cell_type.astype(str).isin(cts)]
+    sel = adata.obs_names.isin(score_ids)
+    tmp = ad.AnnData(X=X[sel], obs=pd.DataFrame(index=adata.obs_names[sel]),
                      var=pd.DataFrame(index=adata.var_names))
     compute_ucell_scores(tmp, sets, max_rank=MAX_RANK, suffix="_UCell", n_jobs=n_jobs)
     null_cols = [f"{k}_UCell" for k in sets]
-    o = obs.join(tmp.obs[null_cols])
+    o = obs.loc[score_ids].join(tmp.obs[null_cols])
     null_summary = _agg.donor_celltype_summary(o, null_cols, min_cells=min_cells,
                                                statistic=statistic)
 
