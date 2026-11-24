@@ -176,8 +176,82 @@ def fit_age_models(summary: pd.DataFrame, pairs, ref_bin: str,
     return pd.DataFrame(omni), pd.DataFrame(contr)
 
 
-def adjust_family(df, pcol="p_omnibus", mask=None, newcol="p_adj_BH"):
-    """Benjamini-Hochberg inside one explicitly declared family of tests."""
+def effective_tests(corr: pd.DataFrame | np.ndarray) -> dict:
+    """Effective number of independent tests in a correlated family.
+
+    Benjamini-Hochberg over k positively correlated tests is conservative: the family behaves
+    as fewer than k independent tests. This returns both standard estimates so the correction
+    can be reported honestly in each direction. It does NOT change any p-value.
+
+    Li & Ji 2005 (Heredity 95:221) and Galwey 2009 (Genet Epidemiol 33:559), both from the
+    eigenvalues of the score correlation matrix.
+    """
+    C = np.asarray(corr.values if hasattr(corr, "values") else corr, dtype=float)
+    if C.ndim != 2 or C.shape[0] != C.shape[1] or C.shape[0] == 0:
+        return dict(k=0, eff_li_ji=np.nan, eff_galwey=np.nan, pc1_var_frac=np.nan)
+    ev = np.sort(np.linalg.eigvalsh(C))[::-1]
+    ev[ev < 0] = 0.0
+    tot = ev.sum()
+    if tot <= 0:
+        return dict(k=C.shape[0], eff_li_ji=np.nan, eff_galwey=np.nan, pc1_var_frac=np.nan)
+    return dict(
+        k=int(C.shape[0]),
+        eff_li_ji=float(sum((1 if e >= 1 else 0) + (e - np.floor(e)) for e in ev)),
+        eff_galwey=float(np.sqrt(ev).sum() ** 2 / tot),
+        pc1_var_frac=float(ev[0] / tot),
+    )
+
+
+def redundancy_report(scores: pd.DataFrame, modules: dict | None = None,
+                      rho_threshold=0.75, method="spearman") -> pd.DataFrame:
+    """Redundancy between module scores, in score space and in gene space.
+
+    The project's original rule was Jaccard > 0.5 on gene membership. That measures how a
+    module was written, not what it detects: in this panel every pair above |rho| = 0.70 has
+    Jaccard 0.0, because interferon-inducible modules share no genes while measuring one axis
+    (see docs/MODULE_DESIGN_AUDIT.md). Score correlation is the primary rule; Jaccard is kept
+    as a secondary check for sets that are literally rewrites of each other.
+    """
+    import itertools
+
+    s = scores.loc[:, scores.notna().mean() > 0.8].dropna()
+    if s.shape[1] < 2 or len(s) < 10:
+        return pd.DataFrame(columns=["a", "b", "rho", "jaccard", "redundant",
+                                     "missed_by_jaccard"])
+    C = s.corr(method=method)
+    gs = {}
+    if modules:
+        for k, v in modules.items():
+            gs[k] = set(v["genes"] if isinstance(v, dict) else v)
+
+    def _genes(col):
+        for suf in ("_UCell", "_logexpr", "_logit", "_cpm"):
+            col = col.replace(suf, "")
+        return gs.get(col, set())
+
+    rows = []
+    for a, b in itertools.combinations(C.columns, 2):
+        A, B = _genes(a), _genes(b)
+        u = A | B
+        j = len(A & B) / len(u) if u else np.nan
+        rho = float(C.loc[a, b])
+        rows.append(dict(a=a, b=b, rho=rho, jaccard=j,
+                         redundant=bool(abs(rho) >= rho_threshold),
+                         missed_by_jaccard=bool(abs(rho) >= rho_threshold
+                                                and (not np.isfinite(j) or j <= 0.5))))
+    return (pd.DataFrame(rows)
+            .sort_values("rho", key=lambda x: x.abs(), ascending=False)
+            .reset_index(drop=True))
+
+
+def adjust_family(df, pcol="p_omnibus", mask=None, newcol="p_adj_BH", scores=None):
+    """Benjamini-Hochberg inside one explicitly declared family of tests.
+
+    `scores` is optional: a donor x module score frame for the tested family. When given, the
+    effective number of independent tests is reported alongside the family size. It changes
+    no p-value -- BH is still over the declared family -- but it records how far that family
+    is from being k independent tests.
+    """
     df = df.copy()
     if mask is None:
         mask = pd.Series(True, index=df.index)
@@ -186,6 +260,13 @@ def adjust_family(df, pcol="p_omnibus", mask=None, newcol="p_adj_BH"):
     if sel.sum():
         df.loc[sel, newcol] = multipletests(df.loc[sel, pcol], method="fdr_bh")[1]
     df["family_size"] = int(sel.sum())
+    if scores is not None:
+        s = scores.loc[:, scores.notna().mean() > 0.8].dropna()
+        eff = effective_tests(s.corr()) if s.shape[1] >= 2 and len(s) >= 10 else \
+            dict(eff_li_ji=np.nan, eff_galwey=np.nan, pc1_var_frac=np.nan)
+        df["family_size_effective_li_ji"] = eff["eff_li_ji"]
+        df["family_size_effective_galwey"] = eff["eff_galwey"]
+        df["family_pc1_var_frac"] = eff["pc1_var_frac"]
     return df
 
 
