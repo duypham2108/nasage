@@ -18,6 +18,9 @@ from . import scoring as _scoring
 from . import stats as _stats
 from ._design import canonical_obs, check_counts, donor_table, store
 
+# Populations eligible for the primary test family (see donor_summary).
+PRIMARY_CELLTYPES = ("basal", "ciliated", "secretory")
+
 
 def _need(adata, key, step):
     st = adata.uns.get("nasage", {})
@@ -91,7 +94,8 @@ def score_modules(adata, *, layer=None, modules=None, max_rank=_scoring.MAX_RANK
 # ------------------------------------------------------------------- donor summaries
 def donor_summary(adata, *, donor_key, celltype_key, age_key, age_bins=None, age_order=None,
                   batch_key=None, sex_key=None, subtype_key=None, min_cells=10,
-                  statistic="auto", applicability=None) -> pd.DataFrame:
+                  statistic="auto", applicability=None,
+                  primary_celltypes=PRIMARY_CELLTYPES) -> pd.DataFrame:
     """One row per donor x cell type: the table every test is based on.
 
     donor_key, celltype_key, age_key : your ``adata.obs`` columns. Cell-type
@@ -109,6 +113,12 @@ def donor_summary(adata, *, donor_key, celltype_key, age_key, age_bins=None, age
     min_cells : below this a donor x cell type is MISSING, never zero.
     statistic : "auto" (median, or mean where most cells score zero), "median",
         "mean" or "winsorized_mean".
+    primary_celltypes : populations whose pairs may enter the primary test
+        family (default: basal, ciliated, secretory). A pair marked primary in
+        the applicability matrix for any other population is tested as
+        exploratory. Every donor contributes many epithelial cells, whereas
+        immune cells are sparse in many donors (notably older ones), so immune
+        estimates rest on few, selected donors. ``None`` keeps the matrix as is.
 
     Also computes module coverage (poorly measured pairs are excluded from
     testing) and the score distribution (ceiling / mostly-zero flags).
@@ -118,7 +128,8 @@ def donor_summary(adata, *, donor_key, celltype_key, age_key, age_bins=None, age
                   age_bins=json.dumps([list(b) for b in age_bins]) if age_bins else None,
                   age_order=list(age_order) if age_order else None, batch_key=batch_key,
                   sex_key=sex_key, subtype_key=subtype_key, min_cells=min_cells,
-                  statistic=statistic)
+                  statistic=statistic,
+                  primary_celltypes=list(primary_celltypes) if primary_celltypes else None)
     params = {k: v for k, v in params.items() if v is not None}     # h5ad-friendly
     st = store(adata)
     # results computed from an earlier summary would no longer match: drop them
@@ -127,6 +138,14 @@ def donor_summary(adata, *, donor_key, celltype_key, age_key, age_bins=None, age
         st.pop(k, None)
     st["params"] = params
     A = applicability if applicability is not None else _mods.load_applicability()
+    if primary_celltypes:
+        known = {ct for d in A.values() for ct in d}
+        missing = sorted(set(primary_celltypes) - known)
+        if missing:
+            raise ValueError(f"primary_celltypes not in the applicability matrix: {missing}")
+        # biological applicability is unchanged; only the testing tier is demoted
+        A = {m: {ct: (0.5 if float(v) == 1.0 and ct not in primary_celltypes else v)
+                 for ct, v in d.items()} for m, d in A.items()}
     obs = _obs(adata)
     unknown = sorted(set(obs.cell_type.astype(str)) - {ct for d in A.values() for ct in d})
     if unknown:
@@ -245,7 +264,8 @@ def pooled_scores(adata, cell_types, *, min_cells=10, label="pooled") -> pd.Data
                               min_cells=min_cells, label=label)
 
 
-def null_control(adata, *, n_sets=50, seed=0, n_bins=25, n_jobs=1) -> pd.DataFrame:
+def null_control(adata, *, n_sets=50, seed=0, n_bins=25, n_jobs=1,
+                 tiers=("primary", "exploratory")) -> pd.DataFrame:
     """Negative control: expression-matched random gene sets per tested module.
 
     For every tested (module, cell type) pair, `n_sets` random gene sets of the
@@ -259,7 +279,10 @@ def null_control(adata, *, n_sets=50, seed=0, n_bins=25, n_jobs=1) -> pd.DataFra
         (> 0.15, a heuristic: about 3 SD above 0.05 for 50 sets).
       * ``empirical_p`` - how often a random set's F statistic is at least the
         module's. A module-specific age effect needs both a small ``p_adj_BH``
-        and a small ``empirical_p``.
+        and a small ``empirical_p``. Its smallest possible value is
+        1 / (n_sets + 1), so use several hundred sets to rank strong effects.
+    tiers : restrict the control to pairs of these tiers, e.g. ``("primary",)``
+        to afford more sets. Only cells of the tested populations are scored.
     """
     from . import controls as _controls
     om = _need(adata, "omnibus", "age_effects")
@@ -270,7 +293,8 @@ def null_control(adata, *, n_sets=50, seed=0, n_bins=25, n_jobs=1) -> pd.DataFra
         adata, _obs(adata), st["donor_summary"], om, st["modules_mapped"], layer=layer,
         n_sets=n_sets, seed=seed, n_bins=n_bins, min_cells=p.get("min_cells", 10),
         statistic=p.get("statistic", "auto"), reference=p["reference"], n_jobs=n_jobs,
-        adjust_depth=p.get("adjust_depth", True), adjust_subtypes=p.get("adjust_subtypes", True))
+        adjust_depth=p.get("adjust_depth", True), adjust_subtypes=p.get("adjust_subtypes", True),
+        tiers=tiers)
     st["null_control"] = _clean(res)
     st["null_tests"] = _clean(null_om)
     return st["null_control"]

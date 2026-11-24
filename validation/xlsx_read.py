@@ -92,6 +92,61 @@ def to_frame(path, sheet=0, header_row=0):
     return pd.DataFrame(rows[header_row + 1:], columns=hdr)
 
 
+def iter_rows(path, sheet=0, max_rows=None):
+    """Stream rows from a large sheet without holding the XML in memory.
+
+    Needed for the NOVA normalized matrix, whose sheet1.xml is 460 MB uncompressed.
+    """
+    with zipfile.ZipFile(path) as z:
+        shared = []
+        if "xl/sharedStrings.xml" in z.namelist():
+            ss = ET.fromstring(z.read("xl/sharedStrings.xml"))
+            for si in ss.iter(f"{NS}si"):
+                shared.append("".join(t.text or "" for t in si.iter(f"{NS}t")))
+        wb = ET.fromstring(z.read("xl/workbook.xml"))
+        sheets = list(wb.iter(f"{NS}sheet"))
+        names = [s.get("name") for s in sheets]
+        idx = names.index(sheet) if isinstance(sheet, str) else sheet
+        rid = sheets[idx].get(
+            "{http://schemas.openxmlformats.org/officeDocument/2006/relationships}id")
+        rels = ET.fromstring(z.read("xl/_rels/workbook.xml.rels"))
+        target = None
+        for r in rels.iter(f"{RELNS}Relationship"):
+            if r.get("Id") == rid:
+                target = r.get("Target")
+        target = (target or f"worksheets/sheet{idx + 1}.xml").lstrip("/")
+        if not target.startswith("xl/"):
+            target = "xl/" + target
+        n = 0
+        with z.open(target) as fh:
+            for event, el in ET.iterparse(fh, events=("end",)):
+                if el.tag != f"{NS}row":
+                    continue
+                cells = {}
+                for c in el.iter(f"{NS}c"):
+                    i = _col_to_idx(c.get("r"))
+                    t = c.get("t")
+                    if t == "inlineStr":
+                        v = "".join(x.text or "" for x in c.iter(f"{NS}t"))
+                    else:
+                        ve = c.find(f"{NS}v")
+                        v = ve.text if ve is not None else None
+                        if v is not None and t == "s":
+                            v = shared[int(v)]
+                        elif v is not None and t not in ("str", "e"):
+                            try:
+                                v = float(v)
+                            except ValueError:
+                                pass
+                    if i is not None:
+                        cells[i] = v
+                yield [cells.get(i) for i in range(max(cells) + 1)] if cells else []
+                el.clear()
+                n += 1
+                if max_rows and n >= max_rows:
+                    return
+
+
 if __name__ == "__main__":
     import sys
     p = sys.argv[1]

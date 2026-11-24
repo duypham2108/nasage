@@ -8,6 +8,12 @@
 Both vector, Type-42 fonts (text stays editable), with 400 dpi PNGs beside them. Built by
 `validation/figure5_plot.py` from `validation/figure5_data.py`.
 
+**Revision history.** 2026-11-24 (second revision): panels S5e and S5f added, carrying the NOVA
+influenza replication of the P5 mucin-barrier result (`results/nova/PREREG_RESULTS.md`). The
+result met the §2.2 verdict table but **failed the §3 specificity control**, so it enters the
+figure as a bounded negative, not as a third replication; the GSE253686 row in S5d records it as
+NOT SPECIFIC. S5 is now 180 × 210 mm. Main Figure 5 is unchanged.
+
 **Revision history.** 2026-11-24: the ALI panel was removed (no source data exists); Figure 4 was
 narrowed to the childhood contrast; the pre-registration table's PENDING row was deleted; and the
 nulls, measurement caveats and pre-registration table were moved from the main figure to S5 at
@@ -77,6 +83,21 @@ floor of droplet scRNA-seq in airway epithelium and carries no claim in this stu
 **(d)** Outcome-anchored tests. Predictions, direction and multiplicity were fixed by a committed
 plan before the data were accessed, and results are reported whichever way they fell.
 
+**(e)** Baseline P5 mucin-barrier score and the odds of acquiring infection, per SD, in three
+independent human challenge cohorts: RSV (GSE155237, n = 39), pneumococcal carriage (GSE261277,
+n = 39) and A/H1N1 influenza (GSE253686 NOVA, n = 74). Horizontal bars, 95% confidence intervals;
+diamond, fixed-effect pooled estimate; dashed line, no effect. All three point estimates are
+protective and the cohorts are statistically homogeneous (I² = 4%). **The pooled estimate is shown
+for completeness and is not claimed**: the NOVA cohort, which carries the most weight, fails its
+specificity control (panel f, orange).
+
+**(f)** Specificity control in the NOVA cohort. Distribution of the log odds ratio for 500
+expression-matched random gene sets fitted with the identical model; orange line, the observed P5
+estimate. 11.4% of random gene sets are at least as extreme (empirical p = 0.114), and 16.4% reach
+p < 0.05 against a nominal 5%, so baseline bulk nasal expression in this cohort predicts shedding
+non-specifically. The same control returned 0 of 500 in both earlier cohorts. Under the locked
+plan (`docs/PREREG_nova_p5.md` §3) this voids the NOVA test irrespective of its p-value.
+
 ---
 
 ## What each panel is allowed to claim
@@ -91,6 +112,8 @@ plan before the data were accessed, and results are reported whichever way they 
 | S5b | p16⁺ calls track sequencing depth | any biological conclusion — the cohort is withdrawn |
 | S5c | SASP cytokines cannot be measured in droplet scRNA-seq of nasal epithelium | that SASP is biologically absent |
 | S5d | the axes were tested against real outcomes and reported honestly | that any axis predicts an outcome |
+| S5e | baseline mucin-barrier score trends protective in three challenge cohorts and never reverses | **that P5 predicts infection** — the pooled OR is shown but voided by S5f |
+| S5f | in the largest cohort the association is not specific to P5 | that the two smaller cohorts are also non-specific — there the control returned 0/500 |
 
 **The sentence the discussion turns on.** CILIUM28 (panel b) is biased toward this result by
 construction. **M02 (panel a) is not** — literature-curated, fixed before this cohort was
@@ -114,7 +137,9 @@ pre-specified primary analysis.
 | S5a | `results/gse336399/module_scores.csv`, `results/pneumo_gse261277/module_scores_all_samples.csv` |
 | S5b | `results/crownlands_figrep/ciliated_cdkn2a.csv.gz` |
 | S5c | `results/own_cohort/module_measurability.csv`, `results/ziegler2021_v2/module_coverage.csv`, `results/loske2022_v2/module_coverage.csv`, `results/crownlands/measurability_gate.csv` |
-| S5d | `results/pneumo_gse261277/PREREG_RESULTS.md`, `results/laiv_gambia/go_vs_outcomes.csv` |
+| S5d | `results/pneumo_gse261277/PREREG_RESULTS.md`, `results/laiv_gambia/go_vs_outcomes.csv`, `results/nova/primary.csv` |
+| S5e | `results/nova/forest_three_cohort.csv` |
+| S5f | `results/nova/matched_null_draws.csv`, `results/nova/primary.csv` |
 
 `validation/figure5_data.py` regenerates the 500 matched-null draws behind panel 5c. It re-runs
 the control exactly as originally reported — same module order, seed, bins and model — and asserts

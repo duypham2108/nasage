@@ -135,10 +135,21 @@ def fit_age_models(summary: pd.DataFrame, pairs, ref_bin: str,
     groups = sorted(map(str, pd.unique(summary.age_bin.dropna())))
     if str(ref_bin) not in groups:
         raise ValueError(f"ref_bin '{ref_bin}' is not one of the age groups in the data: {groups}")
+    # Speed: pandas deep-copies .attrs on every slice, and the summary can hold
+    # thousands of score columns (random-gene-set control). Drop attrs once, split
+    # rows by cell type once, and hand each fit only the columns fit_one reads.
+    summary = summary.copy(deep=False)
+    summary.attrs = {}
+    meta = [c for c in ("age_bin", *covariates, *DEPTH_COVARIATES, *SUBTYPE_COVARIATES)
+            if c in summary.columns]
+    rows = summary.groupby("cell_type", observed=True).indices      # positions, not labels
     omni, contr = [], []
     for mod, ct, tier in pairs:
         col = score_column(mod)
-        m, info = fit_one(summary[summary.cell_type == ct], col, ref_bin, covariates,
+        cols = meta + ([col] if col in summary.columns else [])
+        sub = (summary.iloc[rows[ct], summary.columns.get_indexer(cols)]
+               if ct in rows else summary.iloc[:0])
+        m, info = fit_one(sub, col, ref_bin, covariates,
                           adjust_depth=adjust_depth, adjust_subtypes=adjust_subtypes)
         base = dict(module_id=mod, cell_type=ct, tier=tier, score_column=col,
                     n_donors=info.get("n_donors"), reason=info.get("reason"),

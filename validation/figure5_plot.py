@@ -171,9 +171,9 @@ fig.savefig(OUT / "figure5.png", dpi=400)
 print("wrote", OUT / "figure5.pdf")
 
 # ================================================================ SUPPLEMENTARY S5
-fig = plt.figure(figsize=(180 * MM, 140 * MM))
-gs = GridSpec(2, 2, figure=fig, height_ratios=[1.0, 0.85], hspace=0.42, wspace=0.34,
-              left=0.085, right=0.985, top=0.930, bottom=0.060)
+fig = plt.figure(figsize=(180 * MM, 210 * MM))
+gs = GridSpec(3, 2, figure=fig, height_ratios=[1.0, 0.85, 0.80], hspace=0.52, wspace=0.34,
+              left=0.085, right=0.985, top=0.952, bottom=0.042)
 
 # -- a: no gradient within older adults
 inner = GridSpecFromSubplotSpec(2, 1, subplot_spec=gs[0, 0], hspace=0.62)
@@ -270,22 +270,86 @@ blocks = [
      "locked direction: innate / defence axis −\n"
      "OR 0.15 and 0.48 per SD, $p$ = 0.007, BH 0.064;\n"
      "pathways are the published model's own features"),
+    ("GSE253686 · NOVA influenza challenge", "NOT SPECIFIC", ORANGE,
+     "53 shedders / 21 non-shedders, baseline nasal\n"
+     "locked direction: P5 mucin barrier −, one-sided\n"
+     "OR 0.47 (0.22–1.02), $p$ = 0.028 — but 11.4% of\n"
+     "matched random sets as extreme, so no claim"),
 ]
-y = 0.92
+y = 0.98
 for head, status, scol, body in blocks:
-    ax.text(0.00, y, head, transform=ax.transAxes, fontsize=6.4, va="top", ha="left",
+    ax.text(0.00, y, head, transform=ax.transAxes, fontsize=6.0, va="top", ha="left",
             color=INK, fontweight="bold")
-    ax.text(1.00, y, status, transform=ax.transAxes, fontsize=6.4, va="top", ha="right",
+    ax.text(1.00, y, status, transform=ax.transAxes, fontsize=6.0, va="top", ha="right",
             color=scol, fontweight="bold")
-    ax.text(0.00, y - 0.10, body, transform=ax.transAxes, fontsize=6.0, va="top",
-            ha="left", linespacing=1.70, color=MUTED)
-    y -= 0.46
-    ax.plot([0, 1], [y + 0.10] * 2, transform=ax.transAxes, color="#EEEEEE", lw=0.5,
+    ax.text(0.00, y - 0.075, body, transform=ax.transAxes, fontsize=5.5, va="top",
+            ha="left", linespacing=1.45, color=MUTED)
+    y -= 0.295
+    ax.plot([0, 1], [y + 0.030] * 2, transform=ax.transAxes, color="#EEEEEE", lw=0.5,
             clip_on=False)
-ax.text(0.00, y - 0.02, "Predictions, direction and multiplicity were fixed by a committed\n"
+ax.text(0.00, y - 0.055, "Predictions, direction and multiplicity were fixed by a committed\n"
                         "plan before the data were accessed.",
-        transform=ax.transAxes, fontsize=5.8, va="top", ha="left", linespacing=1.6,
+        transform=ax.transAxes, fontsize=5.5, va="top", ha="left", linespacing=1.6,
         color=MUTED, style="italic")
+
+# -- e: three-cohort forest for P5, with the NOVA caveat on its face
+fo = pd.read_csv(R / "nova" / "forest_three_cohort.csv")
+pr = pd.read_csv(R / "nova" / "primary.csv").iloc[0]
+ax = fig.add_subplot(gs[2, 0])
+ypos = np.arange(len(fo))[::-1]
+for yy, (_, r) in zip(ypos, fo.iterrows()):
+    pooled_row = r.cohort.startswith("pooled")
+    col = INK if pooled_row else (ORANGE if r.cohort.startswith("NOVA") else BLUE)
+    ax.plot([r.ci_lo, r.ci_hi], [yy, yy], color=col, lw=1.1, zorder=3,
+            solid_capstyle="butt")
+    ax.scatter([r.OR], [yy], s=30 if pooled_row else 20,
+               marker="D" if pooled_row else "o", facecolor=col, edgecolor="white",
+               linewidth=0.5, zorder=4)
+ax.axvline(1.0, color=GREY, lw=0.8, ls=(0, (2, 2)), zorder=1)
+ax.set_xscale("log")
+ax.set_xlim(0.02, 30.0)
+ax.set_xticks([0.05, 0.2, 1.0])
+ax.set_xticklabels(["0.05", "0.2", "1"])
+SHORTC = ["RSV", "pneumococcal", "NOVA", "pooled"]
+ax.set_yticks(ypos)
+ax.set_yticklabels(SHORTC, fontsize=6.2)
+ax.set_ylim(-0.8, len(fo) - 0.2)
+ax.set_xlabel("odds ratio per SD of baseline P5 (log scale)")
+ax.tick_params(axis="y", length=0)
+ax.spines["bottom"].set_bounds(0.02, 1.6)
+ax.xaxis.set_minor_locator(matplotlib.ticker.NullLocator())
+for yy, (_, r) in zip(ypos, fo.iterrows()):
+    col = ORANGE if r.cohort.startswith("NOVA") else INK
+    ax.text(28, yy, f"{r.OR:.2f} ({r.ci_lo:.2f}–{r.ci_hi:.2f})", fontsize=5.8,
+            color=col, ha="right", va="center")
+ax.text(28, ypos[2] - 0.42, "fails matched null (panel f)", fontsize=5.5, color=ORANGE,
+        ha="right", va="center")
+ax.text(28, ypos[3] - 0.46, f"$I^2$ = {pr.meta_I2:.0f}%", fontsize=5.8, color=MUTED,
+        ha="right", va="center")
+letter(ax, "e", dx=-0.19, dy=1.16)
+ax.set_title("Protective direction in three cohorts", pad=6, loc="left")
+
+# -- f: why the NOVA cohort cannot carry it
+nd = pd.read_csv(R / "nova" / "matched_null_draws.csv")
+ax = fig.add_subplot(gs[2, 1])
+obs = float(np.log(pr.OR))
+ax.hist(nd.logOR.values, bins=34, color=GREY, edgecolor="white", linewidth=0.3, zorder=2)
+ax.axvline(obs, color=ORANGE, lw=1.3, zorder=4)
+lo, hi = ax.get_ylim(); ax.set_ylim(lo, hi * 1.34)
+ax.annotate("P5 observed", xy=(obs, hi * 0.30), xytext=(obs - 0.30, hi * 0.52),
+            fontsize=6, color=ORANGE, ha="right", va="center",
+            arrowprops=dict(arrowstyle="-", lw=0.7, color=ORANGE))
+ax.set_xlabel("log odds ratio, expression-matched random gene sets")
+ax.set_ylabel("number of gene sets (of 500)")
+ax.text(0.02, 0.97,
+        f"empirical $p$ = {pr.empirical_p:.3f}  (FAIL)\n"
+        f"{pr.null_frac_p05 * 100:.1f}% of random sets reach $p$ < 0.05\n"
+        f"against a nominal 5%; 0/500 in both\n"
+        f"earlier cohorts",
+        transform=ax.transAxes, va="top", ha="left", fontsize=6, color=INK,
+        linespacing=1.6)
+letter(ax, "f", dx=-0.19, dy=1.16)
+ax.set_title("Specificity fails in the largest cohort", pad=6, loc="left")
 
 fig.savefig(OUT / "figure5_supp.pdf", dpi=600)
 fig.savefig(OUT / "figure5_supp.png", dpi=400)

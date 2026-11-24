@@ -79,7 +79,9 @@ as a change in cell state.
    age bin + batch + sex + `log_genes` + subtype fractions (the last two dropped
    when the donor count cannot support them, and recorded); omnibus Wald test for age plus contrasts against a
    reference bin, with 95% CIs, donor counts and donors-per-bin. BH-FDR within
-   one declared family (the primary combinations of the applicability matrix);
+   one declared family (the primary combinations of the applicability matrix, restricted to
+   basal, ciliated and secretory cells by `primary_celltypes`; immune populations are
+   exploratory because they are sparse in many donors, especially older ones);
    exploratory combinations are adjusted separately and never promoted.
 8. **Composition** — CLR regression of donor proportions (arcsine-root as a
    robustness check), BH across populations.

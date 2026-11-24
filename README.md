@@ -112,6 +112,7 @@ adata.write_h5ad("results/cohortA/adata_scored.h5ad")   # results are kept in ad
 | `min_cells` | A donor with fewer cells of a population is **missing** for it, never zero |
 | `reference` | The age group every other group is compared against |
 | `statistic` (`donor_summary`) | `"auto"` (default): median per donor, or mean where most cells score zero |
+| `primary_celltypes` (`donor_summary`) | Populations allowed in the primary test family; default `("basal", "ciliated", "secretory")`. Immune populations are tested as exploratory: they are sparse in many donors, especially older ones, so their estimates rest on few, selected donors. `None` uses the applicability matrix unchanged |
 
 ### Age: groups or years
 
@@ -202,23 +203,26 @@ nas.pl.forest(adata, combos)             # estimates with 95% CIs
 
 ## 5. Modules
 
-| Module | What it reads out | Tested (primary) in |
-|---|---|---|
-| M01 epithelial barrier | Tight, adherens and desmosomal junction genes | basal, ciliated, secretory |
-| M02 mucociliary axoneme | Motile-cilia structure and FOXJ1 programme | ciliated |
-| M02b airway mucins | MUC5AC, MUC5B, SCGB1A1, BPIFA1, BPIFB1 (small panel) | secretory |
-| M03 PIGR | Single gene: secretory IgA transport | secretory |
-| M03b FCGRT | Single gene: IgG transport (FcRn) | exploratory only |
-| M04 innate sensing | Constitutive PRRs and adaptors; sensors that are themselves ISGs removed | epithelium, DC, macrophage, B cell |
-| M05 interferon-stimulated genes | ISG response to type I **and** III interferon | all populations |
-| M06 MHC-I processing | Immunoproteasome, TAP, HLA class I (interferon-inducible) | all populations |
-| M07 MHC-II presentation | HLA class II, CD74, CIITA | DC, macrophage, B cell |
-| M08 APC costimulation | Mature/regulatory DC programme | DC, macrophage, B cell |
-| M09 plasma secretory machinery | PRDM1, XBP1, IRF4, ER secretory genes (no Ig genes) | plasma |
-| M10 IgA fraction | IgA share of Ig heavy-chain counts (logit) | plasma |
-| M11 senescence arrest | CDKN1A, CDKN2A and secreted senescence markers (SERPINE1, IGFBP7, GDF15) | basal, ciliated, secretory |
-| M12 inflammatory SASP | IL6, IL1A/B, CXCL8, CXCL1, CCL2, TNF (inflammaging core) | epithelium, macrophage |
-| M13 resident memory T cells | TRM core programme (CD69, ITGAE, ITGA1, CXCR6, PDCD1, CRTAM, DUSP6) | T cell |
+Primary tests are within basal, ciliated and secretory cells only (`primary_celltypes`).
+Immune populations where a module applies are tested as exploratory.
+
+| Module | What it reads out | Primary in | Exploratory in |
+|---|---|---|---|
+| M01 epithelial barrier | Tight, adherens and desmosomal junction genes | basal, ciliated, secretory | squamous |
+| M02 mucociliary axoneme | Motile-cilia structure and FOXJ1 programme | ciliated | basal |
+| M02b airway mucins | MUC5AC, MUC5B, SCGB1A1, BPIFA1, BPIFB1 (small panel) | secretory | ciliated |
+| M03 PIGR | Single gene: secretory IgA transport | secretory | ciliated |
+| M03b FCGRT | Single gene: IgG transport (FcRn) | none | epithelium, DC, macrophage |
+| M04 innate sensing | Constitutive PRRs and adaptors; sensors that are themselves ISGs removed | basal, ciliated, secretory | DC, macrophage, T cell, B cell |
+| M05 interferon-stimulated genes | ISG response to type I **and** III interferon | basal, ciliated, secretory | immune populations |
+| M06 MHC-I processing | Immunoproteasome, TAP, HLA class I (interferon-inducible) | basal, ciliated, secretory | immune populations |
+| M07 MHC-II presentation | HLA class II, CD74, CIITA | none | epithelium, DC, macrophage, T cell, B cell |
+| M08 APC costimulation | Mature/regulatory DC programme | none | DC, macrophage, B cell |
+| M09 plasma secretory machinery | PRDM1, XBP1, IRF4, ER secretory genes (no Ig genes) | none | plasma, B cell |
+| M10 IgA fraction | IgA share of Ig heavy-chain counts (logit) | none | plasma, B cell |
+| M11 senescence arrest | CDKN1A, CDKN2A and secreted senescence markers (SERPINE1, IGFBP7, GDF15) | basal, ciliated, secretory | macrophage, T cell |
+| M12 inflammatory SASP | IL6, IL1A/B, CXCL8, CXCL1, CCL2, TNF (inflammaging core) | basal, ciliated, secretory | DC, macrophage, neutrophil |
+| M13 resident memory T cells | TRM core programme (CD69, ITGAE, ITGA1, CXCR6, PDCD1, CRTAM, DUSP6) | none | T cell, NK |
 
 ## 6. Function reference
 

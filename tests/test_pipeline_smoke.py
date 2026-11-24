@@ -53,6 +53,27 @@ def test_scores_are_cell_type_specific(adata):
     assert med.idxmax() == "plasma"
 
 
+def test_primary_family_is_epithelial_by_default(adata):
+    om = _st(adata)["omnibus"]
+    prim = set(om.loc[om.tier == "primary", "cell_type"].astype(str))
+    assert prim <= set(nas.tl.PRIMARY_CELLTYPES)
+    # immune pairs that the matrix marks primary are still tested, as exploratory
+    ex = om[(om.module_id == "M05_interferon_stimulated_genes") & (om.cell_type == "Tcell")]
+    assert len(ex) == 1 and ex.tier.iloc[0] == "exploratory"
+    # the matrix itself is unchanged
+    assert nas.load_applicability()["M05_interferon_stimulated_genes"]["Tcell"] == 1.0
+
+
+def test_primary_celltypes_none_keeps_matrix(adata):
+    a = adata.copy()
+    nas.tl.donor_summary(a, subtype_key="fine", primary_celltypes=None, **KEYS)
+    nas.tl.age_effects(a, reference="18-39")
+    om = _st(a)["omnibus"]
+    assert "Tcell" in set(om.loc[om.tier == "primary", "cell_type"].astype(str))
+    with pytest.raises(ValueError, match="not in the applicability matrix"):
+        nas.tl.donor_summary(a, primary_celltypes=("epithelium",), **KEYS)
+
+
 def test_missing_is_missing_not_zero(adata):
     s = _st(adata)["donor_summary"]
     inel = s[~s.eligible]
