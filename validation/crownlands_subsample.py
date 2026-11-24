@@ -21,12 +21,26 @@ CAP = int(sys.argv[3]) if len(sys.argv) > 3 else 500
 SEED = int(sys.argv[4]) if len(sys.argv) > 4 else 0
 MIN_CELLS = 20
 
+# Author annotation (obs["fine_celltype"]), not the CELLxGENE ontology label.
+# Deviation recorded 2026-11-24: the ontology mapping sent "mucus secreting cell" to
+# secretory, which is the submucosal Mucous_gland population, and left Goblet, Club and
+# Serous out. That is not the population the primary cohort calls Secretory. Basal and
+# ciliated are unchanged by the switch (exact same cells).
+CELLTYPE_KEY = "fine_celltype"
 MAPPING = {
-    "respiratory basal cell": "basal",
-    "mucus secreting cell": "secretory",
-    "secretory cell": "secretory",
-    "multiciliated epithelial cell": "ciliated",
+    "Quiescent_HBC": "basal",
+    "Cycling_HBC": "basal",
+    "Club": "secretory",
+    "Serous": "secretory",
+    "Proliferating_Secretory": "secretory",
+    "Multiciliated": "ciliated",
+    # exploratory, carried but not in the primary family
+    "Goblet": "goblet",
+    "Mucous_gland": "mucous_gland",
+    "Suprabasal": "suprabasal",
 }
+PRIMARY = ("basal", "secretory", "ciliated")
+BATCH_COLS = ("flex_version", "device_guided", "cohort", "sample_id")
 
 f = h5py.File(IN, "r")
 
@@ -43,18 +57,23 @@ def col(name):
 
 donor = col("donor_id")
 disease = col("disease")
-ctype = col("cell_type")
+ctype = col(CELLTYPE_KEY)
 stage = col("development_stage")
 sex = col("sex")
 
 obs = pd.DataFrame({"donor": donor, "disease": disease, "cell_type_raw": ctype,
                     "stage": stage, "sex": sex})
+for b in BATCH_COLS:
+    obs[b] = col(b)
+# one batch factor for the model: assay version x guided device
+obs["batch"] = obs.flex_version.astype(str) + "_" + obs.device_guided.astype(str)
 obs["ct"] = pd.Series(ctype).map(MAPPING).values
 obs["age"] = pd.Series(stage).str.extract(r"(\d+)-year-old")[0].astype(float).values
 
 elig = (obs.disease == "normal") & obs.ct.notna()
 print(f"total cells {len(obs):,}; healthy {int((obs.disease=='normal').sum()):,}; "
-      f"healthy in primary cell types {int(elig.sum()):,}")
+      f"healthy in mapped cell types {int(elig.sum()):,}")
+print("batch levels:", obs.loc[elig, 'batch'].value_counts().to_dict())
 print(f"donors: all {obs.donor.nunique()}, healthy {obs.loc[obs.disease=='normal','donor'].nunique()}")
 
 rng = np.random.default_rng(SEED)
@@ -150,7 +169,8 @@ fn = f["var"]["feature_name"]
 symcats = np.array([x.decode() if isinstance(x, bytes) else x for x in fn["categories"][:]])
 sym = np.asarray(symcats[fn["codes"][:]], dtype=object)
 out.create_dataset("var_symbol", shape=sym.shape, dtype=S, data=sym)
-for c in ("donor", "ct", "age", "age_bin", "sex", "cell_type_raw"):
+for c in ("donor", "ct", "age", "age_bin", "sex", "cell_type_raw", "batch",
+          "flex_version", "device_guided", "cohort", "sample_id"):
     v = np.asarray(sub[c].astype(str).values, dtype=object)
     out.create_dataset(f"obs/{c}", shape=v.shape, dtype=S, data=v)
 out.close()
