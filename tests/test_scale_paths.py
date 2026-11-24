@@ -98,3 +98,31 @@ def test_null_set_scoring_is_batched(monkeypatch):
     assert n_calls > 1
     # the dense block any single call allocates stays under ~0.5 GB
     assert per_batch * 4 * n_cells <= 5e8
+
+
+def test_null_control_is_unchanged_by_batching(monkeypatch):
+    """Batching the null sets must not move a single number.
+
+    The batched path scores each group of null signatures on a fresh AnnData and
+    aggregates it immediately, so it takes a different route through pyUCell and
+    donor_celltype_summary than a single all-at-once call. The control's output must
+    be identical either way.
+    """
+    import nasage as nas
+    from nasage.simulate import simulate
+
+    M, A = nas.load_modules(), nas.load_applicability()
+    a, _ = simulate("planted", {k: v["genes"] for k, v in M.items()}, A, seed=3,
+                    n_per_bin=4, cells_per_donor=250, n_genes=1200)
+    nas.tl.score_modules(a)
+    nas.tl.donor_summary(a, donor_key="donor", celltype_key="cell_type",
+                         age_key="age_bin", batch_key="batch", sex_key="sex")
+    nas.tl.age_effects(a, reference="18-39")
+
+    one = nas.tl.null_control(a, n_sets=4, seed=0, n_bins=5)
+
+    # force several batches: one signature per pyUCell call
+    monkeypatch.setattr(controls, "NULL_BATCH_BYTES", 4.0 * a.n_obs)
+    many = nas.tl.null_control(a, n_sets=4, seed=0, n_bins=5)
+
+    pd.testing.assert_frame_equal(one, many)

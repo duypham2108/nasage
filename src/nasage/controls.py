@@ -29,6 +29,10 @@ NULL_TAG = "__null"
 #: tests to exercise the chunked path on a small fixture.
 ROW_CHUNK_ELEMENTS = 20_000_000
 
+#: Target size in bytes of the dense score block pyUCell allocates for one batch of
+#: null signatures. Bounds memory in the number of null sets; lowered by the tests.
+NULL_BATCH_BYTES = 5e8
+
 
 def gene_expression_bins(X, var_names, cells_mask=None, n_bins=25) -> pd.Series:
     """Mean log1p(CP10K) per gene over the analysed cells, cut into quantile bins."""
@@ -117,20 +121,35 @@ def run_null_control(adata, obs: pd.DataFrame, summary: pd.DataFrame, omnibus: p
     cts = set(tested.cell_type.astype(str))
     score_ids = obs.index[obs.cell_type.astype(str).isin(cts)]
     sel = adata.obs_names.isin(score_ids)
-    tmp = ad.AnnData(X=X[sel], obs=pd.DataFrame(index=adata.obs_names[sel]),
-                     var=pd.DataFrame(index=adata.var_names))
-    # pyUCell allocates one dense n_cells x n_signatures block, so hundreds of null
-    # sets on a large cohort exhaust memory. Score in batches sized to ~0.5 GB and
-    # collect the columns; the scores themselves are unchanged by the batching.
+    Xs = X[sel]
+    base_obs = obs.loc[score_ids]
+    # pyUCell allocates one dense n_cells x n_signatures block, and accumulating the
+    # columns in obs re-consolidates every earlier batch on each concat. So each batch
+    # is scored on a fresh AnnData and aggregated to donor x cell type straight away,
+    # which keeps memory flat in the number of null sets. The per-set scores and the
+    # resulting summary are identical to scoring them all at once.
     keys = list(sets)
-    per_batch = max(1, min(len(keys), int(5e8 / (4 * max(tmp.n_obs, 1)))))
+    per_batch = max(1, min(len(keys), int(NULL_BATCH_BYTES / (4 * max(Xs.shape[0], 1)))))
+    null_cols, parts, agg, subcov = [f"{k}_UCell" for k in keys], [], [], {}
     for b in range(0, len(keys), per_batch):
-        compute_ucell_scores(tmp, {k: sets[k] for k in keys[b:b + per_batch]},
+        chunk = keys[b:b + per_batch]
+        tmp = ad.AnnData(X=Xs, obs=pd.DataFrame(index=adata.obs_names[sel]),
+                         var=pd.DataFrame(index=adata.var_names))
+        compute_ucell_scores(tmp, {k: sets[k] for k in chunk},
                              max_rank=MAX_RANK, suffix="_UCell", n_jobs=n_jobs)
-    null_cols = [f"{k}_UCell" for k in sets]
-    o = obs.loc[score_ids].join(tmp.obs[null_cols])
-    null_summary = _agg.donor_celltype_summary(o, null_cols, min_cells=min_cells,
-                                               statistic=statistic)
+        cols = [f"{k}_UCell" for k in chunk]
+        part = _agg.donor_celltype_summary(base_obs.join(tmp.obs[cols]), cols,
+                                           min_cells=min_cells, statistic=statistic)
+        agg.extend(part.attrs.get("aggregation", []))
+        subcov = part.attrs.get("subtype_covariates", subcov)
+        parts.append(part if not parts else part.set_index(["donor", "cell_type"])[cols])
+        del tmp
+    null_summary = parts[0]
+    if len(parts) > 1:
+        null_summary = (null_summary.set_index(["donor", "cell_type"])
+                        .join(parts[1:], how="left").reset_index())
+    null_summary.attrs["aggregation"] = agg
+    null_summary.attrs["subtype_covariates"] = subcov
 
     pairs = [(f"{m}{NULL_TAG}{i}", ct, "null")
              for m, ct in tested[["module_id", "cell_type"]].itertuples(index=False)
