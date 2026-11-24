@@ -24,6 +24,11 @@ from .scoring import MAX_RANK
 
 NULL_TAG = "__null"
 
+#: Largest number of stored elements handled in one pass when expanding CSR row
+#: indices. Bounds the temporary allocation on atlas-scale matrices; lowered by the
+#: tests to exercise the chunked path on a small fixture.
+ROW_CHUNK_ELEMENTS = 20_000_000
+
 
 def gene_expression_bins(X, var_names, cells_mask=None, n_bins=25) -> pd.Series:
     """Mean log1p(CP10K) per gene over the analysed cells, cut into quantile bins."""
@@ -37,7 +42,8 @@ def gene_expression_bins(X, var_names, cells_mask=None, n_bins=25) -> pd.Series:
         Xc = X.tocsr() if not sp.isspmatrix_csr(X) else X
         n_rows, n_cols = Xc.shape
         acc = np.zeros(n_cols)
-        step = max(1, int(2e7 // max(1, Xc.nnz // max(n_rows, 1) + 1)))
+        per_row = max(1, Xc.nnz // max(n_rows, 1) + 1)
+        step = max(1, int(ROW_CHUNK_ELEMENTS // per_row))
         for s in range(0, n_rows, step):
             e = min(s + step, n_rows)
             lo, hi = Xc.indptr[s], Xc.indptr[e]
