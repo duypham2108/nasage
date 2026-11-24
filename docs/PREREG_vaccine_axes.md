@@ -173,3 +173,125 @@ exist.
 
 Independence must be assessed per dataset before any verdict: these source papers studied
 exactly this contrast, so several of these are likely replications rather than new tests.
+
+### 8.3 — 2026-11-24, GSE261277 analysis specification (LOCKED before expression values seen)
+
+Section 8.2 fixed the predicted signs for pneumococcal carriage. This section fixes the model,
+the test and the interpretation rules for one of the datasets it named, GSE261277.
+
+**State of knowledge at lock time.** Seen: the GEO series record, the 115 GSM characteristics
+blocks, the column *names* of `GSE261277_raw_expression_elderly.tsv.gz`, and the published
+supplementary tables mmc1-mmc6. **Not seen: any expression value from this dataset.** The signs
+in 8.2 were locked before even the metadata were available.
+
+#### 8.3.1 Cohort and endpoint
+
+Experimental human pneumococcal challenge (EHPC), serotype 6B strain BHN418, 80,000 CFU per
+nostril, healthy adults aged 50-84. Nasal curettage bulk RNA-seq at baseline (pre-challenge),
+D2 and D9. Endpoint: **carriage acquisition, POS vs NEG**, as deposited in the GSM
+characteristics.
+
+Primary analysis set: the **41 baseline samples** (24 NEG, 17 POS). Baseline is pre-inoculation,
+so this is a prospective test of whether mucosal state predicts acquisition, not a response
+measurement.
+
+#### 8.3.2 Scoring
+
+As in 8.1 and the module confirmation plan: mean over module genes of z-scored log2(CPM+1),
+z across the 41 analysed baseline samples; genes with mean CPM < 1 across those samples are
+dropped and the dropped genes are reported. UCell on raw counts is computed as a **sensitivity
+analysis**, not a second primary test; a module whose verdict differs between the two is
+reported as `scoring_dependent` and carries no claim (the rule already used for M12 in
+GSE155237).
+
+Library-size QC: samples below 5 M assigned counts are excluded, as in 8.1. If that removes any
+sample the counts above are restated in the results file.
+
+#### 8.3.3 Primary family: the three locked signs
+
+One-sided tests, direction taken from 8.2 and not revisited:
+
+| Module | Locked direction in carriage POS | Test |
+|---|---|---|
+| M05 ISG | higher (+) | one-sided Mann-Whitney, POS > NEG |
+| M12 inflammatory SASP | higher (+) | one-sided Mann-Whitney, POS > NEG |
+| M01 epithelial barrier | lower (-) | one-sided Mann-Whitney, POS < NEG |
+
+BH across these **three** tests. Smallest attainable BH is p_min x 3, so BH < 0.05 is reachable
+whenever p < 0.0167. This attainability was checked before locking; the failure of the two
+previous plans (`setA_derivation`, `module_confirmation`) was caused by omitting exactly this
+check.
+
+Confirmatory model, reported alongside the rank test and not replacing it:
+`score ~ carriage + age + sex + smoker + log10(total counts)`, OLS, one-sided p on the carriage
+coefficient. Charlson index is **not** included: it is a composite of the comorbidity fields and
+would be collinear with them. Both the unadjusted rank test and the adjusted model are reported
+whatever they show.
+
+#### 8.3.4 Independence: which of these is a new test
+
+Determined from the source publication's own supplementary tables (mmc1-mmc4), which list the
+22 Reactome pathways it tested on the Susceptible-vs-Protected contrast at -5, 2 and 9 days.
+
+| Status | Modules | Basis |
+|---|---|---|
+| **Replication** (the paper tested an overlapping programme on the same contrast) | M05, M06, M07, M08, M12 | their list contains *Interferon Signaling*, *DDX58/IFIH1-mediated induction of interferon-alpha/beta*, *Class I MHC mediated antigen processing & presentation*, *MHC class II antigen presentation*, *Costimulation by the CD28 family*, *Signaling by Interleukins*, *Neutrophil degranulation* |
+| **Independent** (absent from their list) | M01, M02, M02b, M03, M03b, M09, M10, M11, M13 | no epithelial barrier, ciliary, mucin, immunoglobulin-transport or senescence pathway appears |
+
+Consequence, fixed now: **M01 is the only novel directional test in the primary family.** A
+positive result for M05 or M12 is reported as *replication of the source paper's finding using
+the NasAge modules*, never as independent support for the axes. This wording is fixed here so
+it cannot be softened after seeing the result.
+
+#### 8.3.5 Secondary and exploratory, reported but not claimed
+
+- All remaining modules at baseline, **two-sided**, BH within that family separately. Exploratory.
+- D2 and D9 carriage contrasts, two-sided, exploratory. These are post-exposure, so they measure
+  response to colonisation, not readiness, and cannot support a predictive claim.
+- Age association of each module across 51-80 at baseline, two-sided, exploratory. This cohort
+  has no one under 50, so it tests the gradient *within* older adults only and is not a
+  substitute for the cross-lifespan age analysis.
+
+#### 8.3.6 Power, declared in advance
+
+Simulated one-sided Mann-Whitney, 17 vs 24, 4,000 replicates:
+
+| True effect | power at alpha 0.05 | power at alpha 0.0167 |
+|---|---|---|
+| d = 0.4 | 0.32 | 0.17 |
+| d = 0.6 | 0.56 | 0.37 |
+| d = 0.8 | 0.78 | 0.60 |
+| d = 1.0 | 0.91 | 0.78 |
+| d = 1.2 | 0.98 | 0.93 |
+
+**Interpretation rule, fixed now:** a null result in this cohort is reported as *underpowered
+for effects below d ~ 0.8*, never as evidence that an axis does not predict carriage. A
+significant result is reported with its confidence interval, and the effect size is expected to
+be inflated by selection at this sample size (winner's curse), which is stated in any write-up.
+
+#### 8.3.7 Known limitations, fixed now so they are not discovered later
+
+1. **Bulk, so composition is confounded.** A baseline inflammation signal may be immune-cell
+   presence rather than epithelial state. This cannot be resolved in this dataset. The
+   cell-type-specificity check of the module confirmation plan section 4 is run against Ziegler
+   2021 and reported; a module whose genes concentrate > 50% in one population is flagged
+   `composition_dominated` and not carried forward as a cell-state claim.
+2. **No donor identifier.** Donors can be reconstructed only from identical covariate profiles;
+   5 such groups contain two donors each. Paired within-donor analyses across timepoints are
+   therefore **not performed**. The primary baseline test does not require pairing.
+3. **Elderly arm only.** Only the 51-80 cohort is deposited; the younger comparison cohort shown
+   in the paper's mmc2 is not in GEO, and the submitters state the raw data were lost. No
+   age-group interaction can be tested.
+4. **M12 is at the detection floor in single-cell data** (4 of 4 datasets; see
+   `results/own_cohort/MEASURABILITY.md`). It is measurable in bulk, so it is tested here, but a
+   positive M12 result in this bulk cohort **cannot be transferred** to the single-cell analysis.
+
+#### 8.3.8 Failure conditions
+
+| Condition | Consequence |
+|---|---|
+| No module in the primary family reaches BH < 0.05 | reported as a null, with the power table; no re-specification, no switch to D2/D9 as primary |
+| M05 or M12 significant but M01 not | reported as replication only; the axes gain no independent support |
+| A module's verdict differs between mean-z and UCell | `scoring_dependent`; no claim |
+| > 50% of a module's genes concentrate in one cell type | `composition_dominated`; not transferred |
+| Fewer than 41 baseline samples survive QC | counts restated; analysis proceeds; power table recomputed and reported |
