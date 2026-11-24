@@ -87,44 +87,72 @@ keep[sel] = True
 new_pos = np.full(len(keep), -1, np.int64)
 new_pos[sel] = np.arange(len(sel))
 
-out = h5py.File(OUT, "w")
-gd = out.create_dataset("X/data", (0,), maxshape=(None,), dtype="float32",
-                        chunks=(1 << 20,), compression="lzf")
-gi = out.create_dataset("X/indices", (0,), maxshape=(None,), dtype="int32",
-                        chunks=(1 << 20,), compression="lzf")
-rowlen = np.zeros(len(sel), np.int64)
+import os
 
-CH = 50000
-written = 0
-for s in range(0, len(keep), CH):
-    e = min(s + CH, len(keep))
-    m = keep[s:e]
-    if not m.any():
-        continue
-    lo, hi = indptr[s], indptr[e]
-    dat = X["data"][lo:hi]
-    ind = X["indices"][lo:hi]
-    lens = np.diff(indptr[s:e + 1])
-    starts = np.concatenate([[0], np.cumsum(lens)])
-    rows = np.flatnonzero(m)
-    take = np.concatenate([np.arange(starts[r], starts[r + 1]) for r in rows])
-    gd.resize((written + len(take),)); gd[written:] = dat[take].astype("float32")
-    gi.resize((written + len(take),)); gi[written:] = ind[take].astype("int32")
-    rowlen[new_pos[s + rows]] = lens[rows]
-    written += len(take)
-    print(f"  {e:,}/{len(keep):,}  nnz {written:,}", flush=True)
+# Resume: if X is already complete from an earlier run, only the obs block is rewritten.
+have_X = False
+if os.path.exists(OUT):
+    try:
+        with h5py.File(OUT, "r") as chk:
+            have_X = ("X/indptr" in chk
+                      and tuple(chk["X"].attrs["shape"]) == (len(sel), n_genes))
+    except OSError:
+        have_X = False
 
-out.create_dataset("X/indptr", data=np.concatenate([[0], np.cumsum(rowlen)]).astype("int64"))
-out["X"].attrs["encoding-type"] = "csr_matrix"
-out["X"].attrs["encoding-version"] = "0.1.0"
-out["X"].attrs["shape"] = np.array([len(sel), n_genes], "int64")
+if have_X:
+    print("\nX already written and matches the selection; rewriting obs only")
+    out = h5py.File(OUT, "a")
+    written = out["X/data"].shape[0]
+    for c in list(out["obs"].keys()) if "obs" in out else []:
+        del out[f"obs/{c}"]
+else:
+    out = h5py.File(OUT, "w")
+    gd = out.create_dataset("X/data", (0,), maxshape=(None,), dtype="float32",
+                            chunks=(1 << 20,), compression="lzf")
+    gi = out.create_dataset("X/indices", (0,), maxshape=(None,), dtype="int32",
+                            chunks=(1 << 20,), compression="lzf")
+    rowlen = np.zeros(len(sel), np.int64)
+
+    CH = 50000
+    written = 0
+    for s in range(0, len(keep), CH):
+        e = min(s + CH, len(keep))
+        m = keep[s:e]
+        if not m.any():
+            continue
+        lo, hi = indptr[s], indptr[e]
+        dat = X["data"][lo:hi]
+        ind = X["indices"][lo:hi]
+        lens = np.diff(indptr[s:e + 1])
+        starts = np.concatenate([[0], np.cumsum(lens)])
+        rows = np.flatnonzero(m)
+        take = np.concatenate([np.arange(starts[r], starts[r + 1]) for r in rows])
+        gd.resize((written + len(take),)); gd[written:] = dat[take].astype("float32")
+        gi.resize((written + len(take),)); gi[written:] = ind[take].astype("int32")
+        rowlen[new_pos[s + rows]] = lens[rows]
+        written += len(take)
+        print(f"  {e:,}/{len(keep):,}  nnz {written:,}", flush=True)
+
+    out.create_dataset("X/indptr",
+                       data=np.concatenate([[0], np.cumsum(rowlen)]).astype("int64"))
+    out["X"].attrs["encoding-type"] = "csr_matrix"
+    out["X"].attrs["encoding-version"] = "0.1.0"
+    out["X"].attrs["shape"] = np.array([len(sel), n_genes], "int64")
+
 out.attrs["cap"], out.attrs["seed"] = CAP, SEED
-
-var_idx = f["var"]["_index"][:]
-out.create_dataset("var_index", data=var_idx)
+S = h5py.string_dtype()
+for k in ("var_index", "var_symbol"):
+    if k in out:
+        del out[k]
+out.create_dataset("var_index", data=f["var"]["_index"][:])
+# symbols live in var/feature_name (categorical); the index is Ensembl
+fn = f["var"]["feature_name"]
+symcats = np.array([x.decode() if isinstance(x, bytes) else x for x in fn["categories"][:]])
+sym = np.asarray(symcats[fn["codes"][:]], dtype=object)
+out.create_dataset("var_symbol", shape=sym.shape, dtype=S, data=sym)
 for c in ("donor", "ct", "age", "age_bin", "sex", "cell_type_raw"):
-    v = sub[c].astype(str).values
-    out.create_dataset(f"obs/{c}", data=np.array(v, dtype=h5py.string_dtype()))
+    v = np.asarray(sub[c].astype(str).values, dtype=object)
+    out.create_dataset(f"obs/{c}", shape=v.shape, dtype=S, data=v)
 out.close()
 print(f"\nwrote {OUT}: {len(sel):,} cells x {n_genes:,} genes, nnz {written:,}")
 sub.to_csv(OUT.replace(".h5ad", "_obs.csv"), index=False)
