@@ -7,7 +7,11 @@ Order of work (plan section 8): expression gate and family size are printed BEFO
 p-value; then the primary models, the matched-null control, the named cilium secondary,
 and the sensitivity analyses.
 
-Usage: python validation/gse336399_age.py <counts.tsv.gz> <gsm_text> <out_dir>
+The deposited counts are indexed by Ensembl gene ID, so symbols are restored from the
+CELLxGENE gene table stored in the Ziegler 2021 h5ad (the same map used for GSE230494).
+That table carries all 155 module genes, including the HLA and immunoglobulin loci.
+
+Usage: python validation/gse336399_age.py <counts.tsv.gz> <gsm_text> <symbol_map.h5ad> <out_dir>
 """
 import sys
 from pathlib import Path
@@ -19,7 +23,7 @@ import statsmodels.formula.api as smf
 
 import nasage as nas
 
-COUNTS, GSM, OUT = sys.argv[1], sys.argv[2], Path(sys.argv[3])
+COUNTS, GSM, SYMMAP, OUT = sys.argv[1], sys.argv[2], sys.argv[3], Path(sys.argv[4])
 OUT.mkdir(parents=True, exist_ok=True)
 N_SETS, N_BINS = 500, 25
 ALIAS = {"CIMAP3": "ODF3B", "STING1": "TMEM173"}
@@ -53,8 +57,13 @@ meta["tin"] = pd.to_numeric(meta.tin, errors="coerce")
 C = pd.read_csv(COUNTS, sep="\t", index_col=0)
 C = C.loc[:, [c for c in C.columns if c in meta.index]]
 meta = meta.loc[C.columns]
-C = C.groupby(level=0).sum()
-print(f"{C.shape[1]} samples x {C.shape[0]} features; metadata matched for all")
+C.index = C.index.astype(str).str.split(".").str[0]
+import anndata as ad
+vmap = ad.read_h5ad(SYMMAP, backed="r").var["feature_name"].astype(str)
+sym = vmap.reindex(C.index)
+print(f"Ensembl -> symbol: {sym.notna().mean():.1%} of {C.shape[0]} features mapped")
+C = C[sym.notna()].groupby(sym[sym.notna()].values).sum()
+print(f"{C.shape[1]} samples x {C.shape[0]} symbols; metadata matched for all")
 meta["depth"] = C.sum(0)
 meta["log10_depth"] = np.log10(meta.depth)
 print("age:", meta.age.describe().round(1).to_dict())
@@ -67,6 +76,9 @@ logc = np.log2(cpm + 1)
 mu, sd = logc.mean(1), logc.std(1, ddof=1)
 expressed = (cpm.mean(1) >= 1) & (sd > 0)
 Z = logc[expressed].sub(mu[expressed], axis=0).div(sd[expressed], axis=0)
+# free the name: patsy resolves C() against the module namespace, so a counts matrix
+# called C silently shadows its categorical operator inside every formula below
+del C, cpm
 print(f"\nfeatures passing CPM >= 1: {int(expressed.sum())} of {len(expressed)}")
 
 M = {m: [ALIAS.get(g, g) for g in d["genes"]] for m, d in nas.load_modules().items()}
