@@ -113,7 +113,14 @@ def run_null_control(adata, obs: pd.DataFrame, summary: pd.DataFrame, omnibus: p
     sel = adata.obs_names.isin(score_ids)
     tmp = ad.AnnData(X=X[sel], obs=pd.DataFrame(index=adata.obs_names[sel]),
                      var=pd.DataFrame(index=adata.var_names))
-    compute_ucell_scores(tmp, sets, max_rank=MAX_RANK, suffix="_UCell", n_jobs=n_jobs)
+    # pyUCell allocates one dense n_cells x n_signatures block, so hundreds of null
+    # sets on a large cohort exhaust memory. Score in batches sized to ~0.5 GB and
+    # collect the columns; the scores themselves are unchanged by the batching.
+    keys = list(sets)
+    per_batch = max(1, min(len(keys), int(5e8 / (4 * max(tmp.n_obs, 1)))))
+    for b in range(0, len(keys), per_batch):
+        compute_ucell_scores(tmp, {k: sets[k] for k in keys[b:b + per_batch]},
+                             max_rank=MAX_RANK, suffix="_UCell", n_jobs=n_jobs)
     null_cols = [f"{k}_UCell" for k in sets]
     o = obs.loc[score_ids].join(tmp.obs[null_cols])
     null_summary = _agg.donor_celltype_summary(o, null_cols, min_cells=min_cells,
