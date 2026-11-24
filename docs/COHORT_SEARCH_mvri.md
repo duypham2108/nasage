@@ -54,6 +54,44 @@ At 19 subjects split three ways it is below any useful power. It would be legiti
 **pre-declared direction-only check**, never as a replication, and the sensible time to do that
 is after a properly powered cohort exists, not instead of one.
 
+## Second sweep: beyond GEO expression series
+
+The first sweep was GEO-only and transcriptomic, which was too narrow. Extended to:
+
+**PRIDE (proteomics).** Searched `nasal`, `nasopharyngeal`, `nasosorption`, `nasal lining
+fluid`. **Nothing usable.** Human nasal proteomics in PRIDE is air–liquid-interface culture
+(PXD066146, PXD038893), diesel/particle exposure (PXD065940), chronic rhinosinusitis
+(PXD079333), nasopharyngeal carcinoma, or acute COVID swab diagnostics (PXD025277, PXD022889,
+PXD029143). `nasosorption` and `nasal lining fluid` return **zero** studies. There is no
+deposited nasal proteomic dataset with a baseline-then-outcome design.
+
+This is worth noting because P5 is unusually suited to a proteomic test: MUC5AC, MUC5B, TFF1,
+TFF3, FCGBP, AGR2 and ZG16B are all **secreted**, so the programme is in principle measurable in
+nasal lining fluid. The data simply do not exist publicly.
+
+**ArrayExpress / BioStudies.** Searched `nasal challenge`, `nasal carriage`, `nasosorption`,
+`nasal vaccine human`. No human nasal baseline-plus-outcome study. The only challenge dataset,
+E-MTAB-13041 (influenza H3N2 human challenge), is **whole blood**. `nasosorption` returns zero.
+
+**Further GEO terms** (`colonization`, `carriage`, `prospective respiratory infection`,
+`vaccination`, `household transmission`) surfaced two more candidates, both rejected:
+
+| Dataset | Why not |
+|---|---|
+| GSE183071, n = 156 | nasal epithelium in **acute** COVID with severity outcome, not baseline→acquisition; targeted immune panel (GPL30569), so the mucin genes are probably not even measured |
+| GSE150133, n = 71 | prospective RTI rates in infancy, but the transcriptome is **whole blood**, not nasal |
+
+## A proteomic note on GSE253686
+
+The NOVA study has **nasal Olink proteomics linked to shedding outcome** (its data files S9 and
+S10 report proteins differing between shedders and non-shedders at D3/D5). So nasal proteomics
+with a real outcome does exist — it is inside the same gated supplement as the transcriptomic
+outcome table.
+
+**But it would not test P5.** Olink inflammation panels measure cytokines and chemokines
+(CXCL10, IL-6, CXCL11, TRAIL, PD-L1 and so on), not gel-forming mucins. The NOVA proteomics is
+worth having for other reasons; it is not an orthogonal test of the mucin-barrier programme.
+
 ## Conclusion and recommendation
 
 **There is no third cohort in GEO that meets the requirement.** Baseline-nasal-plus-outcome human
