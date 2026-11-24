@@ -140,3 +140,36 @@ SD of about 3 if E1 is roughly balanced. Moderate true effects can therefore be 
 Any change after this commit (endpoint substitution, covariate unavailable, sample exclusions not
 covered above, coding errors found later) goes into a dated "Deviations" list appended to the
 results file, with the reason. Hypothesis signs and the decision rules are never changed.
+
+## 8. Extensions (dated; sections 0-7 above are unchanged)
+
+### 8.1 — 2026-11-24, RSV challenge (GSE155237)
+
+The live-replicating arm of section 1 is tested in a challenge cohort, because LAIV outcomes
+cannot be linked to the public transcriptomes. Signs are taken unchanged from section 1; the
+full specification is the docstring of `validation/rsv_challenge_gse155237.py`, committed before
+the expression data were downloaded. It is a **proxy** for the live-replicating arm: a challenge
+virus, not a vaccine.
+
+### 8.2 — 2026-11-24, pneumococcal carriage after mucosal vaccination
+
+Datasets: GSE164649, GSE117580, GSE261277, GSE124949 (nasal transcriptome around experimental
+pneumococcal challenge; the first two randomise LAIV against inactivated vaccine). Only GEO
+sample metadata has been seen: no expression values. Endpoint: carriage acquisition (POS/NEG).
+
+Predicted signs, recorded now so they cannot be chosen later:
+
+| Axis | Carriage acquisition | Mechanism |
+|---|---|---|
+| M05 ISG (interferon tone) | **+** (higher tone, higher odds of carriage) | type I/III interferon impairs innate control of pneumococcal colonisation; this is the basis of the influenza/LAIV-pneumococcus interaction |
+| M12 inflammatory SASP | **+** | neutrophilic mucosal inflammation accompanies impaired control |
+| M01 barrier | **−** | an intact epithelial barrier resists colonisation |
+| M04, M06, M02b, M03, M11 | 0 | no directional prediction |
+
+Note this is the OPPOSITE sign to M05 in section 1: interferon tone is predicted to restrict a
+replicating *virus* while impairing control of a *bacterium*. That contrast is itself a
+prediction, and it is the clearest statement of why no single "mucosal readiness" score can
+exist.
+
+Independence must be assessed per dataset before any verdict: these source papers studied
+exactly this contrast, so several of these are likely replications rather than new tests.
