@@ -106,12 +106,26 @@ Two things are worth doing instead, in order:
    S1 and S16 behind a PMC download gate — two browser clicks. This roughly doubles the evidence
    base and is the single highest-value unlock available. The plan must be locked before those
    files are opened.
-2. **Test P5 against the LAIV nasal IgA response in GSE164649.** This is a *vaccine* endpoint,
+2. ~~**Test P5 against the LAIV nasal IgA response in GSE164649.**~~ **CHECKED 2026-11-24 — not
+   possible.** The GEO metadata carries only timepoint, inoculation date, virus species, sex,
+   carriage, age and vaccine arm; the string "IgA" appears nowhere in it. The series has one
+   supplementary file, the raw counts matrix. The paper (Carniel et al. 2021, *JCI Insight*,
+   [doi:10.1172/jci.insight.141088](https://doi.org/10.1172/jci.insight.141088), PMC7934923,
+   open access, retrieved via PubMed) has a single supplement — a 1.3 MB **PDF** — and its data
+   availability statement says only "all other underlying data are provided in the manuscript",
+   i.e. in figures. **Per-participant IgA titres are not public**, the same severed-link
+   situation as the Gambia LAIV cohort. The original text of this recommendation follows, struck:
+
+   ~~This is a *vaccine* endpoint,
    and the project currently has none — every outcome tested so far is pathogen challenge, which
    is exactly why the phrase "vaccine readiness" is still unlicensed. The Liverpool overlap
    weakens it as a replication of the *carriage* result but matters much less for a different
    endpoint. It would need its own locked plan, and whether per-participant IgA titres are public
-   has not yet been checked.
+   has not yet been checked.~~
+
+   **Consequence: the project still has no vaccine endpoint of any kind, and no public route to
+   one.** Every outcome available is pathogen challenge. The phrase "mucosal vaccine readiness"
+   cannot be supported from public data as things stand.
 
 Neither is a substitute for the third challenge cohort that does not exist. The honest position
 for the manuscript remains the one in `results/mvri_outcome/PREREG_RESULTS.md` §5: two cohorts,
