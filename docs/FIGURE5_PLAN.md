@@ -1,5 +1,20 @@
 # Figure 5: external validation — panel plan
 
+> **Superseded in part, 2026-11-24.** The figure has been drawn; the authoritative panel
+> description is now `docs/FIGURE5_LEGEND.md`, and the figure itself is at
+> `D:\research\nasage_validation\results\figure5\figure5.pdf`. Two decisions changed this plan:
+>
+> 1. **The ALI panel is dropped.** No α-tubulin⁺ quantification exists. The panel that was
+>    reserved for it has been removed rather than left as a placeholder, and a module
+>    measurability panel (M12 below the droplet detection floor in 4 cohorts) takes the slot.
+>    **Figure 5 now has no protein-level corroboration of the ciliary claim** — see
+>    "The functional gap" below.
+> 2. **Figure 4 is narrowed to the childhood contrast.** The bimodality claim is withdrawn.
+>    What was "the elderly arm does not replicate" is now the stated basis for that narrowing.
+>    Agreed wording is in `docs/FIGURE_WORDING.md`.
+>
+> The claim table and the reasoning below stand as written.
+
 Status: proposal, 2026-11-24. Written against what has actually been produced, not against what
 we hoped to produce. Every number cited here exists in `D:\research\nasage_validation\results\`
 and every test was run from a plan committed before the data were touched.
@@ -14,9 +29,9 @@ cohort that generated them, and to show the reader exactly where they do not.
 
 | From | Claim | External status |
 |---|---|---|
-| Fig 3 | ciliary/axoneme programme is elevated in elderly nasal epithelium | **replicated** (GSE336399 + ALI) |
+| Fig 3 | ciliary/axoneme programme is elevated in elderly nasal epithelium | **replicated** (GSE336399), transcript level only |
 | Fig 4 | interferon tone is high in childhood | **replicated** (Loske 2022) |
-| Fig 4 | interferon tone rises again in the elderly (bimodality) | **not replicated**, two cohorts |
+| Fig 4 | interferon tone rises again in the elderly (bimodality) | **not replicated**, two cohorts — **claim withdrawn 2026-11-24** |
 | Fig 3 | inflammatory SASP accompanies senescence | **untestable** — unmeasurable in 4/4 cohorts |
 | Fig 1–2 | the axes predict mucosal vaccine / infection outcome | **one null, one descriptive** |
 
@@ -25,15 +40,27 @@ against us, because the two negatives are what make the three positives credible
 
 ---
 
-## Panel a — functional validation in air–liquid interface culture
+## The functional gap (formerly panel a)
 
-**Your own ALI data.** Proportion of α-tubulin+ (ciliated) cells, elderly vs young donors.
+There is no protein-level or functional corroboration of the ciliary claim in this figure, and
+that is now the figure's main structural weakness. Everything in panels a, b and f is transcript
+abundance measured by sequencing, which is exactly the measurement whose confounds panel e is
+about. A reviewer can reasonably ask whether "more axoneme transcription in older nasal
+epithelium" means more cilia, more ciliated cells, or neither.
 
-This panel carries the ciliary claim at the protein level. It is the only evidence in the paper
-that is immune to every confound that dominates the rest of this work — sequencing depth, cell
-composition inferred from transcript abundance, gene-set selection bias. It should lead.
+Three things would close it, in rough order of effort:
 
-Layout: donor-level points with group medians, not bars. n donors per group stated on the axis.
+1. **Immunostaining for a ciliary marker** (acetylated α-tubulin, FOXJ1) on nasal sections or
+   brushings from young and old donors, scored as the fraction of marker-positive epithelium.
+   This is the cheapest decisive experiment and it directly answers the composition objection.
+2. **Ciliary beat frequency or mucociliary transport** in ALI cultures from young and old donors.
+   Functional rather than structural, and harder to dismiss, but a bigger undertaking.
+3. **Deconvolution of the bulk cohort** to estimate ciliated-cell fraction and re-test M02
+   adjusted for it. Cheap, uses data already in hand, but still transcriptomic — it narrows the
+   composition objection rather than removing it.
+
+Until one of these exists, the manuscript should say "axoneme transcription increases with age"
+and not "ciliated cells increase with age" or "ciliary function is preserved/altered".
 
 ## Panel b — the ciliary age gradient in an independent nasal cohort
 
@@ -91,7 +118,22 @@ to be stated in the main text, not buried. Either Figure 4's claim is narrowed t
 contrast, or the elderly arm is explicitly marked as cohort-specific and not replicated. **This is
 a decision for you, and it should be made before the figure is drawn, not after review.**
 
-## Panel d — outcome anchoring, reported as pre-registered
+## Panel g — outcome anchoring, reported as pre-registered
+
+**Open question for submission: the PENDING row.** As drawn, panel g has three rows and the
+third says PENDING. A published figure must not advertise unfinished work, so before submission
+that row does one of two things:
+
+- **the NOVA supplements arrive** → lock a plan, run it, and the row carries a real result,
+  whichever way it falls. This is the version worth waiting for: it would be the only row in the
+  table where a pre-registered prediction meets a clinical endpoint;
+- **they do not** → delete the row. The panel then has two rows, one null and one descriptive,
+  which is thin but honest. A two-row table may be better placed as a supplementary table than
+  as a main-figure panel, since it carries no graphic.
+
+A third option — dropping panel g entirely — is worse than either. The panel's value is that it
+shows the axes *were* tested against outcomes and the results reported whichever way they fell.
+Removing it leaves a figure that only shows what worked.
 
 A small table-figure, one row per outcome-anchored attempt, each with its locked direction, its
 result, and its power.

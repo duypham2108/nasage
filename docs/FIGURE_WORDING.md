@@ -109,16 +109,45 @@ panel plots detection rate rather than biology. This control is not optional for
 response is bimodal, with classical ISGs peaking only in childhood and a distinct IFN-signalling
 cluster high again in the elderly.
 
-**Status: not yet checked by me.** No wording fixed. Three notes for drafting:
+**DECISION, 2026-11-24: Figure 4 is narrowed to the childhood contrast.** The bimodality claim
+is withdrawn from the figure's headline. The elderly arm is not deleted from the analysis, but it
+is no longer asserted, for a reason that is now on the record in two independent cohorts.
 
-1. M05 is well measured in this cohort: 22/22 genes present, 14-20 genes clearing 5% detection
-   across basal, secretory and ciliated. The measurement is sound.
-2. This figure cannot be replicated in the Crownlands cohort, which has no donor under 18. It
-   stays a single-cohort result, and the external replication (Fig 5b) covers the adult-to-
-   elderly half only. Say so rather than letting a reader assume Fig 5b covers Fig 4.
-3. The bimodality is the interesting claim and will attract the most scrutiny. A second
-   IFN-signalling cluster high in the elderly needs the random-set control and an explicit
-   statement of which genes separate the two clusters.
+~~*Outline:* ... the response is bimodal, with ... a distinct IFN-signalling cluster high again
+in the elderly.~~ — struck 2026-11-24, replaced by the wording below.
+
+**Agreed wording.** "Interferon-stimulated gene programmes are highest in childhood nasal
+epithelium and decline into adulthood." Nothing about a second peak.
+
+**What supports it.**
+
+| Claim | Evidence |
+|---|---|
+| high in childhood | Loske 2022, independent cohort: M05 higher in children in basal, secretory and ciliated (standardised effect 1.6-2.4, BH <= 0.002); module-specific against 500 matched random sets in basal and secretory (empirical p 0.004-0.012) |
+| measurement is sound | M05 is 22/22 genes present in the primary cohort, 14-20 clearing 5% detection across the three epithelial types |
+
+**Why the elderly arm was dropped.** Two independent cohorts show **no** interferon gradient
+within older adults:
+
+| cohort | age range | result |
+|---|---|---|
+| GSE261277 | 51-80 | rho = -0.16, p = 0.32 |
+| GSE336399 | 47-89 | beta = -0.0071, p = 0.306 |
+
+Neither is well powered for a small effect, so this is "not supported", not "disproved" — and the
+figure should say the former. A second IFN cluster rising in the elderly is exactly the kind of
+claim a reviewer will test against public data, and it does not survive that test today.
+
+**What Figure 4 must not say.**
+
+1. Not "bimodal". Not "peaks again in the elderly". Not "U-shaped".
+2. Not that the childhood result extends across the lifespan. Loske's adults span 24-77 but the
+   contrast tested is child vs adult, not a lifespan trajectory.
+3. Not that Figure 5 replicates Figure 4 in full. Figure 5c replicates the childhood contrast;
+   Figure 5d is the reason the elderly arm is gone. Say this explicitly rather than letting a
+   reader assume otherwise.
+4. The ciliated-cell result did not clear the matched-null control (empirical p = 0.076). If
+   ciliated cells are shown, that number is shown with them.
 
 ---
 

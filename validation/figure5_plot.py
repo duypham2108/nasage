@@ -4,9 +4,6 @@ Every panel is drawn from a file in D:\\research\\nasage_validation\\results\\, 
 a plan that was committed before the data were accessed. Nothing here recomputes a
 statistic; the script reads results and arranges them.
 
-Panel a is a labelled placeholder: the ALI alpha-tubulin+ quantification is not in this
-repository, so the slot is reserved rather than invented.
-
 Usage: python validation/figure5_plot.py <results_dir> <out_dir>
 """
 import sys
@@ -18,7 +15,6 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec, GridSpecFromSubplotSpec
-from matplotlib.patches import Rectangle
 from scipy import stats
 
 R, OUT = Path(sys.argv[1]), Path(sys.argv[2])
@@ -46,28 +42,15 @@ gs = GridSpec(3, 3, figure=fig, height_ratios=[1.0, 1.0, 0.70],
               left=0.085, right=0.985, top=0.950, bottom=0.030)
 
 
-def letter(ax, s, dx=-0.20, dy=1.12):
+def letter(ax, s, dx=-0.22, dy=1.12):
     ax.text(dx, dy, s, transform=ax.transAxes, fontsize=9, fontweight="bold",
             va="top", ha="left", color=INK)
 
 
-# ---------------------------------------------------------------- a: ALI placeholder
-ax = fig.add_subplot(gs[0, 0])
-ax.set_xticks([]); ax.set_yticks([])
-for sp in ax.spines.values():
-    sp.set_visible(True); sp.set_linestyle((0, (4, 3))); sp.set_color(MUTED); sp.set_linewidth(0.7)
-ax.text(0.5, 0.62, "ALI culture\n$\\alpha$-tubulin$^{+}$ fraction", ha="center", va="center",
-        fontsize=8, color=INK, transform=ax.transAxes)
-ax.text(0.5, 0.33, "elderly vs young donors\n\n[source data not in this repository —\nslot reserved]",
-        ha="center", va="center", fontsize=6.2, color=MUTED, style="italic",
-        transform=ax.transAxes)
-letter(ax, "a")
-ax.set_title("Functional validation, protein level", pad=6, loc="left")
-
-# ---------------------------------------------------------------- b1: M02 vs age
+# ---------------------------------------------------------------- a: M02 vs age
 ms = pd.read_csv(R / "gse336399" / "module_scores.csv", index_col=0)
 pa = pd.read_csv(R / "gse336399" / "primary_age_effects.csv").set_index("score")
-ax = fig.add_subplot(gs[0, 1])
+ax = fig.add_subplot(gs[0, 0])
 x, y = ms["age"].values, ms["M02_mucociliary_axoneme"].values
 ax.scatter(x, y, s=9, facecolor=BLUE, edgecolor="white", linewidth=0.3, alpha=0.85, zorder=3)
 b, a = np.polyfit(x, y, 1)
@@ -86,24 +69,24 @@ ax.set_ylabel("M02 mucociliary axoneme\n(mean z, 18 genes)")
 ax.text(0.03, 0.97, f"$\\rho$ = {r.rho:.2f}, $p$ = {r.p_rho:.3f}\nadj. $\\beta$ = {r.beta_age:+.4f}/yr, "
                     f"$p$ = {r.p_adj:.3f}\nBH = {r.BH_adj:.2f} (n.s. in family of 13)",
         transform=ax.transAxes, va="top", ha="left", fontsize=6, color=MUTED, linespacing=1.5)
-letter(ax, "b")
+letter(ax, "a")
 ax.set_title("Independent nasal cohort (n = 120)", pad=6, loc="left")
 
-# ---------------------------------------------------------------- b2: matched null
+# ---------------------------------------------------------------- b: matched null
 dr = pd.read_csv(R / "figure5" / "gse336399_null_draws.csv.gz")
-ax = fig.add_subplot(gs[0, 2])
+ax = fig.add_subplot(gs[0, 1])
 nullb = dr.loc[dr.module == "M02_mucociliary_axoneme", "beta"].values
 ax.hist(nullb, bins=34, color=GREY, edgecolor="white", linewidth=0.3, zorder=2)
 obs2 = pa.loc["M02_mucociliary_axoneme", "beta_age"]
 obsc = pd.read_csv(R / "gse336399" / "matched_null_control.csv").set_index("module")
 obs28 = obsc.loc["CILIUM28_manuscript", "beta_age"]
-for v, c, lab in ((obs28, GREEN, "CILIUM28"), (obs2, ORANGE, "M02")):
+for v, c in ((obs28, GREEN), (obs2, ORANGE)):
     ax.axvline(v, color=c, lw=1.4, zorder=4)
 ymax = ax.get_ylim()[1] * 1.22
 ax.set_ylim(0, ymax)
-ax.text(obs2, ymax * 0.98, "M02\n+0.0234", ha="center", va="top", fontsize=6.2,
+ax.text(obs2, ymax * 0.98, "M02\n+0.0234", ha="right", va="top", fontsize=6.2,
         color=ORANGE, linespacing=1.3)
-ax.text(obs28, ymax * 0.70, "CILIUM28\n+0.0180", ha="center", va="top", fontsize=6.2,
+ax.text(obs28, ymax * 0.70, "CILIUM28\n+0.0180", ha="right", va="top", fontsize=6.2,
         color=GREEN, linespacing=1.3)
 xlo, xhi = ax.get_xlim()
 ax.set_xlim(xlo, xhi + 0.05 * (xhi - xlo))
@@ -111,13 +94,13 @@ ax.set_xlabel("age coefficient $\\beta$ per year")
 ax.set_ylabel("500 expression-matched\nrandom gene sets")
 ax.text(0.03, 0.97, "0 of 500 random sets\nreached $p$ < 0.05\n(nominal 5%)",
         transform=ax.transAxes, va="top", ha="left", fontsize=6.2, color=INK, linespacing=1.5)
-letter(ax, "c", dx=-0.24)
+letter(ax, "b", dx=-0.24)
 ax.set_title("Specificity: no generic age inflation", pad=6, loc="left")
 
 # ---------------------------------------------------------------- c: childhood arm
 ds = pd.read_csv(R / "loske2022_v2" / "donor_celltype_scores.csv")
 aw = pd.read_csv(R / "loske2022_v2" / "age_effects_with_null.csv")
-ax = fig.add_subplot(gs[1, 0])
+ax = fig.add_subplot(gs[0, 2])
 cts = ["basal", "secretory", "ciliated"]
 col = "M05_interferon_stimulated_genes_UCell"
 rng = np.random.default_rng(1)
@@ -142,11 +125,11 @@ h = [plt.Line2D([], [], marker="o", ls="", color=ORANGE, ms=4, label="children")
      plt.Line2D([], [], marker="o", ls="", color=BLUE, ms=4, label="adults")]
 ax.legend(handles=h, loc="upper right", frameon=False, handletextpad=0.3, borderpad=0.1,
           ncol=2, columnspacing=1.0)
-letter(ax, "d")
-ax.set_title("Childhood arm replicates (Loske 2022)", pad=6, loc="left")
+letter(ax, "c", dx=-0.24)
+ax.set_title("Childhood contrast replicates", pad=6, loc="left")
 
-# ---------------------------------------------------------------- d: elderly arm fails
-inner = GridSpecFromSubplotSpec(2, 1, subplot_spec=gs[1, 1], hspace=0.62)
+# ---------------------------------------------------------------- d: why Fig 4 is childhood-only
+inner = GridSpecFromSubplotSpec(2, 1, subplot_spec=gs[1, 0], hspace=0.62)
 p2 = pd.read_csv(R / "pneumo_gse261277" / "module_scores_all_samples.csv", index_col=0)
 p2 = p2[p2.timepoint == "baseline"]
 panels = [
@@ -168,12 +151,12 @@ for k, (lab, xv, yv) in enumerate(panels):
     if k == 1:
         axk.set_xlabel("age (years)")
     if k == 0:
-        letter(axk, "e", dx=-0.22, dy=1.22)
-        axk.set_title("Elderly arm does not replicate", pad=6, loc="left")
+        letter(axk, "d", dx=-0.22, dy=1.22)
+        axk.set_title("No rise within older adults", pad=6, loc="left")
 
 # ---------------------------------------------------------------- e: depth confound
 cd = pd.read_csv(R / "crownlands_figrep" / "ciliated_cdkn2a.csv.gz")
-ax = fig.add_subplot(gs[1, 2])
+ax = fig.add_subplot(gs[1, 1])
 bins = np.linspace(0, 9000, 46)
 for lab, c, sel in (("CDKN2A$^{-}$", BLUE, cd.cdkn2a == 0), ("CDKN2A$^{+}$", ORANGE, cd.cdkn2a > 0)):
     v = cd.loc[sel, "n_genes"].values
@@ -188,15 +171,50 @@ ax.text(0.03, 0.97, "median 2,888 vs 4,265\n+606 genes in 181/187 donors",
         transform=ax.transAxes, va="top", ha="left", fontsize=6, color=INK, linespacing=1.5)
 ax.ticklabel_format(axis="y", style="sci", scilimits=(0, 0))
 ax.yaxis.get_offset_text().set_fontsize(6)
-letter(ax, "f", dx=-0.24)
+letter(ax, "e", dx=-0.24)
 ax.set_title("p16$^{+}$ status is largely a depth event", pad=6, loc="left")
 
-# ---------------------------------------------------------------- f: prereg table
+# ---------------------------------------------------------------- f: M12 detection floor
+MODS = ["M02_mucociliary_axoneme", "M05_interferon_stimulated_genes",
+        "M11_senescence_arrest", "M12_inflammatory_sasp"]
+SHORT = ["M02\naxoneme", "M05\nISG", "M11\narrest", "M12\nSASP"]
+own = pd.read_csv(R / "own_cohort" / "module_measurability.csv")
+own = own[own.cell_type == "Ciliated"]
+cover = {"primary\n(10x 3')": own.groupby("module").frac_detected.apply(lambda s: (s >= 0.05).mean())}
+for key, lab in (("ziegler2021_v2", "Ziegler 2021\n(10x 3')"), ("loske2022_v2", "Loske 2022\n(10x 3')")):
+    d = pd.read_csv(R / key / "module_coverage.csv")
+    cover[lab] = d[d.cell_type == "ciliated"].set_index("module_id")["frac_genes_detected"]
+d = pd.read_csv(R / "crownlands" / "measurability_gate.csv")
+cover["olfactory\n(10x Flex)"] = d[d.cell_type == "ciliated"].set_index("module")["frac_detected"]
+
+ax = fig.add_subplot(gs[1, 2])
+labs = list(cover)
+xpos = np.arange(len(MODS))
+mk = ["o", "s", "^", "D"]
+for j, lab in enumerate(labs):
+    vals = [cover[lab].get(m, np.nan) for m in MODS]
+    off = (j - 1.5) * 0.17
+    ax.scatter(xpos + off, vals, s=16, marker=mk[j], facecolor="white",
+               edgecolor=BLUE if j < 3 else MUTED, linewidth=1.0, label=lab.replace("\n", " "),
+               zorder=4, clip_on=False)
+ax.axhline(0.6, color=ORANGE, lw=0.9, ls=(0, (3, 2)), zorder=2)
+ax.text(3.42, 0.63, "measurability\ngate (60%)", fontsize=5.8, color=ORANGE, ha="right",
+        va="bottom", linespacing=1.3)
+ax.set_xticks(xpos); ax.set_xticklabels(SHORT, fontsize=6.2, linespacing=1.4)
+ax.set_xlim(-0.45, 3.45)
+ax.set_ylim(-0.04, 1.14)
+ax.set_ylabel("fraction of module genes\nat $\\geq$ 5% detection")
+ax.legend(loc="lower left", frameon=False, handletextpad=0.1, borderpad=0.1,
+          labelspacing=0.25, fontsize=5.8, bbox_to_anchor=(-0.02, -0.03))
+letter(ax, "f", dx=-0.24)
+ax.set_title("SASP below the detection floor", pad=6, loc="left")
+
+# ---------------------------------------------------------------- g: prereg table
 ax = fig.add_subplot(gs[2, :])
 ax.axis("off")
 letter(ax, "g", dx=-0.070, dy=1.16)
 ax.text(-0.022, 1.16, "Outcome-anchored tests, reported as pre-registered",
-        transform=ax.transAxes, fontsize=7.5, fontweight="normal", va="top", ha="left")
+        transform=ax.transAxes, fontsize=7.5, va="top", ha="left")
 
 rows = [
     ("GSE261277\npneumococcal challenge", "17 POS / 22 NEG\nbaseline nasal",
