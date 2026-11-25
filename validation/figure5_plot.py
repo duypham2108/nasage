@@ -94,9 +94,9 @@ aw = pd.read_csv(R / "loske2022_v2" / "age_effects_with_null.csv")
 CTS = ["basal", "secretory", "ciliated"]
 
 # ================================================================ MAIN FIGURE 5
-fig = plt.figure(figsize=(180 * MM, 196 * MM))
+fig = plt.figure(figsize=(180 * MM, 202 * MM))
 gs = GridSpec(3, 6, figure=fig, height_ratios=[1.0, 1.0, 1.15], hspace=0.52, wspace=1.25,
-              left=0.075, right=0.985, top=0.952, bottom=0.060)
+              left=0.075, right=0.985, top=0.954, bottom=0.090)
 
 # -- a: M02 vs age
 ax = fig.add_subplot(gs[0, 0:2])
@@ -225,16 +225,14 @@ for _yy, _p in zip(ypos, PROGS):
             color=INK if _r.verdict.startswith("SPECIFIC") else ORANGE)
 ax.text(7.4, ypos[-1] - 0.58, "misassigned", fontsize=5.5, color=ORANGE, ha="right",
         va="center")
-ax.text(0.01, 0.99, "rows as in f · 3 cohorts, 224 donor × cell-type units\nsign unanimous in "
-                    "every programme and cohort",
+# Footer, not an in-axes annotation: at 0.99 this sat on top of the first data row.
+ax.text(0.0, -0.21, "rows as in f · 3 cohorts, 224 donor × cell-type units · "
+                    "sign unanimous\nin every programme and cohort",
         transform=ax.transAxes, fontsize=5.4, color=MUTED, va="top", ha="left",
         linespacing=1.5)
 letter(ax, "g", dx=-0.10, dy=1.14)
 ax.set_title("Five specific, one points the wrong way", pad=6, loc="left")
 
-# Renamed 2026-11-25. Figure 5 of the manuscript is now the mucosal-vaccine-readiness figure
-# (validation/figure5_mvri_plot.py), which writes figure5.pdf. This cilium-replication figure
-# keeps its own name so the two scripts cannot silently overwrite each other.
 fig.savefig(OUT / "figure5.pdf", dpi=600)
 fig.savefig(OUT / "figure5.png", dpi=400)
 print("wrote", OUT / "figure5.pdf")
