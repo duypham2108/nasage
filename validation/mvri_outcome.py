@@ -157,6 +157,14 @@ for loader in (load_rsv, load_pneumo):
     M, info, label = loader()
     D, Z, logexpr, used, cover = score_cohort(M, info, label)
     cohorts[label] = dict(D=D, Z=Z, logexpr=logexpr, used=used, cover=cover)
+    # Dump per-gene expression + outcome for the specification curve
+    # (docs/PREREG_multiverse.md §1, closing deviation 2). Opt-in; the locked path is unchanged.
+    if __import__("os").environ.get("NASAGE_DUMP_EXPR") == "1":
+        OUT.mkdir(parents=True, exist_ok=True)
+        tag = "rsv" if "RSV" in label else "pneumo"
+        logexpr.to_csv(OUT / f"expr_{tag}.csv.gz")
+        D.to_csv(OUT / f"meta_{tag}.csv")
+        print(f"  dumped expr_{tag}.csv.gz {logexpr.shape} and meta_{tag}.csv")
     print(f"\n=== {label}: {D.shape[0]} subjects, outcome "
           f"{int(D.y.sum())} positive / {int((1 - D.y).sum())} negative")
     print(cover[["program", "n_used", "n_genes", "frac", "transferable"]].to_string(index=False))
