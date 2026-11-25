@@ -161,3 +161,38 @@ Two consequences for the figure as drawn:
 
 The §4 overlap decision (Figure 4 already owns antigen presentation) and the §5 question
 (whether to bring in a cohort with a real outcome) are both still open and still yours.
+
+---
+
+# Revised, 2026-11-25 (second pass)
+
+Panel a became a Sankey (genes -> axes -> cell types) on request, and the figure was then
+trimmed: **axes that fail the measurability gate and genes below the 5% detection floor are
+removed from the score as well as from the figure**, so panel a is a true statement of the
+inputs rather than a filtered view of them.
+
+Run: `validation/mvri_audit_epithelial.py <h5ad> <out> 500 all` ->
+`results/mvri_audit_trim/`. The same script with `epi` restricts every axis to epithelium;
+that variant was explored and is recorded below but is not what the figure uses.
+
+Dropping the undetected genes **strengthens** both surviving results, because a mean-of-z
+over a set padded with undetected genes is diluted:
+
+| Axis | genes scored | empirical P before | after |
+|---|---|---|---|
+| Antigen presentation | 11 of 17 | 0.010 | **< 0.002** (0 of 500) |
+| IgA support | 3 of 4 | 0.016 | **0.002** |
+| Mucus permeability | 13 of 15 | 0.128 | 0.066 (still not specific) |
+| Innate sensing | — | — | gate fail, 45% |
+| Cytokine tone | — | — | gate fail, 54% |
+
+**Epithelium-only variant** (`results/mvri_audit_epi/`, not used for the figure): antigen
+presentation strengthens further to empirical P < 0.002 on 66,925 epithelial cells, but
+**IgA support becomes unscorable** — only 2 of its 4 genes clear the floor once Plasma and
+B mem are excluded, which shows its signal is partly carried by the B/plasma compartment
+rather than by epithelium. Worth stating in the text even though the figure keeps all cell
+types.
+
+Document: `manuscript/figure5.tex`, two pages (figure, then legend), compiled with tectonic
+from the figure directory. The §4 overlap question (Figure 4 already owns antigen
+presentation) and the §5 question (a cohort with a real outcome) remain open.

@@ -81,9 +81,31 @@ WIN = pd.read_csv(F5 / "window_trends.csv")
 NUL = pd.read_csv(F5 / "null_stats.csv.gz")
 S = pd.read_csv(AUD / "donor_axis_scores.csv", index_col=0)
 C = pd.read_csv(AUD / "axis_correlation.csv", index_col=0)
-WS = pd.read_csv(AUD / "weight_sensitivity.csv")
+
+N_TOTAL = DON.donor.nunique()            # donors carrying at least one axis subset
+# Axes carried into the figure: those clearing the 60% measurability gate. Innate sensing and
+# cytokine tone fail it, and their genes sit at the droplet detection floor, so neither the
+# axes nor their undetected genes appear in the figure. Supplementary Fig. 5b-c keeps the
+# record of why they were dropped.
+KEEP = [a for a in AXES if a in R.index and bool(R.loc[a, "gate_pass"])]
+MEASURABLE = KEEP                        # shadows the static list in mvri_axes
+C = C.loc[KEEP, KEEP]
 EFF = effective_tests(C)
-N_TOTAL = DON.donor.nunique()      # donors carrying at least one axis subset
+
+def weight_sensitivity(S, keep, n=10000, seed=11):
+    """Which age bin peaks, over random sign-respecting weightings of the kept axes."""
+    Z = S[keep].apply(lambda c: (c - c.mean()) / c.std(ddof=1))
+    bm = Z.assign(age=S.age.values).groupby("age").mean()
+    bm = bm.reindex([b for b in AGE_ORDER if b in bm.index])
+    signs = np.array([-1 if AXES[k]["weight"] < 0 else 1 for k in keep])
+    rng = np.random.default_rng(seed)
+    peaks = []
+    for _ in range(n):
+        w = rng.uniform(0.05, 1.0, size=len(keep)) * signs
+        peaks.append(bm.index[int(np.argmax(bm.values @ (w / np.abs(w).sum())))])
+    pk = pd.Series(peaks).value_counts(normalize=True)
+    return pd.DataFrame({"age_bin": pk.index, "frac_peak": pk.values})
+
 
 DEP = DEPS = None
 if (AUD / "depth_sensitivity.csv").exists():
@@ -133,53 +155,158 @@ def donor_strip(ax, sub, jitter_seed=0, show_median=True):
     ax.set_xlim(-0.6, len(AGE_ORDER) - 0.4)
 
 
+def ribbon(ax, x0, x1, y0t, y0b, y1t, y1b, colour, alpha=0.45, n=60, hatch=None):
+    """A Sankey ribbon: a filled band whose edges follow a smoothstep from x0 to x1."""
+    t = np.linspace(0, 1, n)
+    s = t * t * (3 - 2 * t)                      # smoothstep, flat at both nodes
+    xs = x0 + (x1 - x0) * t
+    top = y0t + (y1t - y0t) * s
+    bot = y0b + (y1b - y0b) * s
+    ax.fill(np.concatenate([xs, xs[::-1]]), np.concatenate([top, bot[::-1]]),
+            facecolor=colour, edgecolor="none", alpha=alpha, zorder=2, hatch=hatch,
+            linewidth=0)
+
+
+def panel_a_sankey(ax, DET, CT, R):
+    """genes -> axes -> cell types.
+
+    Heights are flows, not decoration: an axis node is as tall as its gene count, split into
+    a solid block (genes detected in >= 5% of the cells the axis is scored in) and a hatched
+    block (genes below that floor, which still enter the score and contribute only noise).
+    Each axis's height is then divided among its cell subsets in proportion to **cells**, so
+    the panel also shows the composition the deck never states -- for instance that the
+    antigen-presentation axis is overwhelmingly epithelial, with under 2% of its cells
+    myeloid.
+    """
+    order_t = ["Basal", "Club", "Secretory", "Goblet", "Goblet inflammatory", "Ciliated",
+               "Macrophage", "Monocyte", "B mem", "Plasma"]
+    order_t = [t for t in order_t if t in set(CT[CT.axis.isin(KEEP)].t)]
+    axes_order = list(KEEP)
+    ng = {a: int(DET[(DET.axis == a) & DET.measurable].shape[0]) for a in axes_order}
+    nok = dict(ng)
+
+    GAP = 4.0
+    T = sum(ng.values()) + GAP * (len(axes_order) - 1)
+
+    def Y(u):                                     # units from the top -> axes fraction
+        return 1.0 - u / T
+
+    # flow from each axis into each cell type, in gene-units
+    flow = {}
+    for a in axes_order:
+        sub = CT[CT.axis == a]
+        tot = float(sub.n_cells.sum())
+        for _, r in sub.iterrows():
+            flow[(a, r.t)] = ng[a] * r.n_cells / tot
+
+    # Small compartments get a minimum drawn height so their labels stay separable; the
+    # ribbons into them are scaled to match. Macrophage, Monocyte and Plasma are a few
+    # hundred cells against Goblet's 43,000, and at true scale they vanish.
+    raw_h = {t: sum(flow.get((a, t), 0.0) for a in axes_order) for t in order_t}
+    MINH, CGAP = 2.2, 0.9
+    cell_h = {t: max(h, MINH) for t, h in raw_h.items()}
+    n_gap = max(len(order_t) - 1, 1)
+    need = sum(cell_h.values()) + CGAP * n_gap
+    if need > T:                                  # shrink to fit rather than overflow
+        f = T / need
+        cell_h = {t: h * f for t, h in cell_h.items()}
+        CGAP *= f
+    else:
+        CGAP = (T - sum(cell_h.values())) / n_gap
+    scale = {t: cell_h[t] / raw_h[t] if raw_h[t] > 0 else 1.0 for t in order_t}
+
+    cell_top, u = {}, 0.0
+    for t in order_t:
+        cell_top[t] = u
+        u += cell_h[t] + CGAP
+    cell_fill = dict(cell_top)                    # running offset as ribbons arrive
+
+    XG0, XG1, XA0, XA1, XC0, XC1 = 0.215, 0.243, 0.520, 0.556, 0.800, 0.826
+
+    atop, u = {}, 0.0
+    for a in axes_order:
+        atop[a] = u
+        u += ng[a] + GAP
+
+    for a in axes_order:
+        ok = bool(R.loc[a, "gate_pass"])
+        col = AXCOL[a] if ok else GREY
+        t0, h = atop[a], ng[a]
+
+        # ---- gene node: solid = detected, hatched = below the floor
+        ax.add_patch(plt.Rectangle((XG0, Y(t0 + h)), XG1 - XG0, h / T,
+                                   facecolor=col, edgecolor="none", zorder=4))
+        frac = float(R.loc[a, "frac_measurable"])
+        emp = float(R.loc[a, "empirical_p"])
+        verdict = (f"empirical $P$ {emp:.3f}*" if (ok and emp < 0.05) else
+                   (f"empirical $P$ {emp:.3f}" if ok else "below detection floor"))
+        yc = Y(t0 + h / 2)
+        ax.text(XG0 - 0.012, yc + 0.046, a, fontsize=6.0, fontweight="bold",
+                ha="right", va="center", color=INK if ok else MUTED)
+        ax.text(XG0 - 0.012, yc,
+                f"{ng[a]} genes scored, {frac:.0%} of the list detected",
+                fontsize=5.0, ha="right", va="center", color=MUTED)
+        ax.text(XG0 - 0.012, yc - 0.046, verdict, fontsize=5.2, ha="right", va="center",
+                color=col if ok else MUTED,
+                fontweight="bold" if (ok and emp < 0.05) else "normal")
+
+        # ---- gene -> axis
+        ribbon(ax, XG1, XA0, Y(t0), Y(t0 + h), Y(t0), Y(t0 + h), col, alpha=0.42)
+
+        # ---- axis node
+        ax.add_patch(plt.Rectangle((XA0, Y(t0 + h)), XA1 - XA0, h / T,
+                                   facecolor=col, edgecolor="none", zorder=4))
+        # ---- axis -> cell types, ordered by target so ribbons do not cross
+        tg = sorted([t for t in order_t if (a, t) in flow], key=lambda t: cell_top[t])
+        off = t0
+        for t in tg:
+            w = flow[(a, t)]
+            c0, c1 = cell_fill[t], cell_fill[t] + w * scale[t]
+            ribbon(ax, XA1, XC0, Y(off), Y(off + w), Y(c0), Y(c1), col,
+                   alpha=0.40 if ok else 0.12)
+            cell_fill[t] = c1
+            off += w
+
+    SHORT_T = {"Goblet inflammatory": "Goblet infl."}
+    for t in order_t:
+        t0, h = cell_top[t], cell_h[t]
+        ax.add_patch(plt.Rectangle((XC0, Y(t0 + h)), XC1 - XC0, h / T,
+                                   facecolor="#6B6B6B", edgecolor="none", zorder=4))
+        n = int(CT[(CT.t == t) & CT.axis.isin(KEEP)].n_cells.max())
+        ax.text(XC1 + 0.009, Y(t0 + h / 2), f"{SHORT_T.get(t, t)} ({n:,})", fontsize=5.5,
+                ha="left", va="center", color=INK)
+
+    for x, lab in [((XG0 + XG1) / 2, "genes"), ((XA0 + XA1) / 2, "axis"),
+                   ((XC0 + XC1) / 2, "cells it is scored in")]:
+        ax.text(x, 1.035, lab, fontsize=6.2, ha="center", va="bottom", color=MUTED)
+    # key for the two block styles
+    ax.text(0.015, -0.090, "only genes detected in ≥ 5% of the cells their axis is "
+                           "scored in are shown, and only those genes enter the score",
+            fontsize=5.2, va="center", ha="left", color=MUTED)
+    ax.text(0.70, -0.090, "cell nodes are cell counts, with a floor\n"
+                          "so small compartments stay visible",
+            fontsize=5.2, va="center", ha="left", color=MUTED)
+    ax.set_xlim(0, 1)
+    ax.set_ylim(-0.135, 1.02)
+    ax.axis("off")
+
+
 # ================================================================== MAIN FIGURE
-fig = plt.figure(figsize=(180 * MM, 193 * MM))
+fig = plt.figure(figsize=(180 * MM, 222 * MM))
 fig.text(0.012, 0.988, TITLE, fontsize=10, fontweight="bold", va="top", ha="left",
          color=INK)
 age_legend(fig, 0.012, 0.963, ncol=7)
-gs = GridSpec(3, 3, figure=fig, height_ratios=[0.60, 1.0, 1.02],
-              hspace=0.58, wspace=0.52,
+gs = GridSpec(3, 3, figure=fig, height_ratios=[1.15, 1.0, 1.02],
+              hspace=0.58, wspace=0.72,
               left=0.112, right=0.975, top=0.880, bottom=0.135)
 
-# ---- a: the five axes, and what is measurable ---------------------------------
+# ---- a: genes -> axes -> cells (Sankey) ---------------------------------------
 axa = fig.add_subplot(gs[0, :])
-axa.set_xlim(0, 5)
-axa.set_ylim(0, 1)
-axa.axis("off")
-letter(axa, "a", dx=-0.032, dy=1.42)
-axa.text(0, 1.30, "The five axes of the index, and the fraction of each one's genes detected "
-                  "in ≥ 5% of the cells it is scored in",
+letter(axa, "a", dx=-0.030, dy=1.30)
+axa.text(0, 1.20, "What each measurable axis is built from and where it is read out: its "
+                  "detected genes, then the cells those genes are scored in",
          transform=axa.transAxes, fontsize=7, va="bottom", ha="left", color=INK)
-
-for i, name in enumerate(AXES):
-    r = R.loc[name]
-    ok = bool(r.gate_pass)
-    edge = AXCOL[name] if ok else GREY
-    axa.add_patch(FancyBboxPatch((i + 0.04, 0.08), 0.92, 0.82,
-                                 boxstyle="round,pad=0.0,rounding_size=0.04",
-                                 linewidth=0.9, edgecolor=edge,
-                                 facecolor="#F6F8FA" if ok else "#F2F2F2",
-                                 transform=axa.transData, zorder=2))
-    tcol = INK if ok else MUTED
-    axa.text(i + 0.50, 0.785, name, ha="center", va="center", fontsize=7,
-             fontweight="bold", color=tcol, zorder=3)
-    axa.text(i + 0.50, 0.645, f"{int(r.n_genes_found)} genes", ha="center", va="center",
-             fontsize=6, color=MUTED, zorder=3)
-    axa.text(i + 0.50, 0.545, SUBSET_LABEL[name], ha="center", va="center",
-             fontsize=5.3, color=MUTED, zorder=3, style="italic")
-    x0, w = i + 0.14, 0.72
-    axa.add_patch(plt.Rectangle((x0, 0.30), w, 0.085, facecolor=FAINT, lw=0, zorder=3))
-    axa.add_patch(plt.Rectangle((x0, 0.30), w * float(r.frac_measurable), 0.085,
-                                facecolor=edge, lw=0, zorder=4))
-    axa.plot([x0 + w * GATE] * 2, [0.275, 0.41], color=INK, lw=0.8, zorder=5)
-    if i == 0:
-        axa.text(x0 + w * GATE, 0.445, "60% gate", ha="center", va="center",
-                 fontsize=5.2, color=INK, zorder=5)
-    axa.text(i + 0.50, 0.165, f"{r.frac_measurable:.0%} detected"
-             + ("" if ok else "  —  below floor"),
-             ha="center", va="center", fontsize=6, color=tcol,
-             fontweight="normal" if ok else "bold", zorder=3)
+panel_a_sankey(axa, DET, CT, R)
 
 # ---- b: donor-level trajectories, measurable axes only ------------------------
 for j, name in enumerate(MEASURABLE):
@@ -240,7 +367,7 @@ axd = fig.add_subplot(gs[2, 1])
 letter(axd, "d", dx=-0.34, dy=1.20)
 order = [t for t in ["Basal", "Club", "Secretory", "Goblet", "Goblet inflammatory",
                      "Ciliated", "Macrophage", "Monocyte", "cDC", "pDC",
-                     "B mem", "Plasma"] if t in set(CT.t)]
+                     "B mem", "Plasma"] if t in set(CT[CT.axis.isin(KEEP)].t)]
 sub = CT[CT.axis.isin(MEASURABLE)]
 vmax = float(np.nanmax(np.abs(sub.mean_score)))
 for i, name in enumerate(MEASURABLE):
@@ -276,8 +403,9 @@ axd.legend(loc="upper center", bbox_to_anchor=(0.45, -0.40), ncol=3, frameon=Fal
 # ---- e: the composite ---------------------------------------------------------
 axe = fig.add_subplot(gs[2, 2])
 letter(axe, "e", dx=-0.32, dy=1.20)
-Z = S[list(AXES)].apply(lambda c: (c - c.mean()) / c.std(ddof=1))
-w = np.array([AXES[k]["weight"] for k in AXES])
+Z = S[KEEP].apply(lambda c: (c - c.mean()) / c.std(ddof=1))
+w = np.array([AXES[k]["weight"] for k in KEEP])
+w = w / np.abs(w).sum()
 comp = pd.DataFrame({"comp": Z.values @ w, "age": S.age.values})
 rng = np.random.default_rng(7)
 means, ns = [], []
@@ -297,10 +425,10 @@ axe.axhline(0, color=GREY, lw=0.5, ls=":", zorder=1)
 axe.set_xticks(range(len(AGE_ORDER)))
 axe.set_xticklabels([f"{lab}\n(n={n})" for lab, n in zip(LABELS, ns)],
                     rotation=55, ha="right", fontsize=5.6)
-axe.set_ylabel("weighted composite index")
+axe.set_ylabel("combined score")
 axe.set_xlim(-0.6, len(AGE_ORDER) - 0.4)
-axe.set_title(f"Weighted composite of all five axes\ncomputable for "
-              f"{len(comp)} of {N_TOTAL} donors", fontsize=6.6, pad=4)
+axe.set_title(f"The {len(KEEP)} measurable axes combined,\nall {len(comp)} donors",
+              fontsize=6.6, pad=4)
 
 fig.savefig(OUT / "figure5_maturation.pdf", dpi=600)
 fig.savefig(OUT / "figure5_maturation.png", dpi=300)
@@ -351,8 +479,8 @@ for j, name in enumerate(MEASURABLE):
         letter(ax, "a", dx=-0.17, dy=1.34)
 
 # ---- S b: matched nulls -------------------------------------------------------
-for j, name in enumerate(AXES):
-    ax = figs.add_subplot(gss[1, 2 * j:2 * j + 2])
+for j, name in enumerate(KEEP):
+    ax = figs.add_subplot(gss[1, 3 * j:3 * j + 3])
     d = NUL[NUL.axis == name].kw_stat.values
     ax.hist(d, bins=26, color=FAINT, edgecolor=GREY, linewidth=0.4)
     obs = float(R.loc[name, "KW_stat_perdonor"])
@@ -367,7 +495,7 @@ for j, name in enumerate(AXES):
     if j == 0:
         ax.set_ylabel("matched null sets", fontsize=6)
         letter(ax, "b", dx=-0.42, dy=1.46)
-axnote = figs.add_subplot(gss[1, 10:])
+axnote = figs.add_subplot(gss[1, 9:])
 axnote.axis("off")
 axnote.text(0, 0.95, "500 random gene sets\nper axis, matched on\nexpression decile and\nset "
                      "size, scored and\ntested identically at\ndonor level. Vertical\nline, "
@@ -410,6 +538,7 @@ axc2.set_title("Detection of every gene, within the cells its own axis is scored
 # ---- S d: weight sensitivity --------------------------------------------------
 axd2 = figs.add_subplot(gss[2, 8:])
 letter(axd2, "d", dx=-0.26, dy=1.16)
+WS = weight_sensitivity(S, KEEP)
 ws = WS.set_index("age_bin").frac_peak.reindex(AGE_ORDER).fillna(0.0)
 axd2.bar(range(len(AGE_ORDER)), ws.values,
          color=[AGE_COLORS[b] for b in AGE_ORDER], width=0.72, linewidth=0)
@@ -426,7 +555,7 @@ SHORT = {"Mucus permeability": "Mucus", "Antigen presentation": "Antigen pres.",
 if DEP is not None:
     axe2 = figs.add_subplot(gss[3, :3])
     letter(axe2, "e", dx=-0.44, dy=1.16)
-    names = [n for n in AXES if n in DEP.index]
+    names = [n for n in KEEP if n in DEP.index]
     axe2.barh(range(len(names)), [DEP.loc[n, "rho_with_depth"] for n in names],
               color=[AXCOL[n] for n in names], height=0.6, linewidth=0)
     axe2.set_yticks(range(len(names)))
