@@ -1,16 +1,22 @@
-# Figure document
+# Figure documents
 
-`figures.tex` builds a 9-page PDF: a scope page, then each of Figures 5, 6, S5 and S6 as a
-full page followed by its legend.
+Two separate documents, because the main set must stand alone:
+
+- `figures_main.tex` (6 pages) -- context on Figures 1-4 and why Figures 5 and 6 exist, a
+  methods section, then Figures 5 and 6 each as a full page followed by its legend.
+  **It makes no reference to any supplementary figure**, in the text or in the artwork.
+- `figures_supplementary.tex` (5 pages) -- Figures S5 and S6 with their legends. This one
+  does reference the main figures.
 
 The four figure PDFs are **not** in this repository — validation outputs live outside it, in
 `D:\research\nasage_validation\results\figure5\`. The document references them by bare
 filename, so it must be compiled from that directory:
 
 ```sh
-cp manuscript/figures.tex D:/research/nasage_validation/results/figure5/
+cp manuscript/figures_*.tex D:/research/nasage_validation/results/figure5/
 cd D:/research/nasage_validation/results/figure5
-tectonic -X compile figures.tex
+tectonic -X compile figures_main.tex
+tectonic -X compile figures_supplementary.tex
 ```
 
 `tectonic` is in the `texc` conda environment
