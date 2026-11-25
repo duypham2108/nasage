@@ -100,3 +100,27 @@ It is admissible only under strict conditions, because it is a redesign:
 - **The original programmes stay frozen**; the redesign is a new, separately named set.
 - **It may fail**, and a redesigned set that loses the association is evidence the association
   was the global axis all along — which is a result worth having.
+
+
+---
+
+# Progress, 2026-11-25
+
+| # | Weakness | Status |
+|---|---|---|
+| **B1/B2** | dominant axis | **characterised, not solved.** Residualisation destroys signal; P5 cannot be made axis-orthogonal (7 genes of 11, below the floor). Reported as a limit of the claim. |
+| **B3** | effective vs declared family | **fixed in code.** `effective_tests()` reports Li & Ji and Galwey beside every BH. |
+| **B4** | Jaccard rule | **fixed.** `redundancy_report()` applies the score-correlation rule; Jaccard kept as a secondary check. |
+| **B5** | matched null vs model p | **characterised.** Approach B shows the primary statistic is anticonservative under inter-gene correlation; P7's VIF is 12.5. |
+| **B6** | winner's curse | **handled.** Predicted 0.4–0.6, observed 0.471. |
+| **B8** | project-wide multiplicity | **FIXED.** `test_registry.py`: 832 p-values, 140 primary. P5's outcome results do not survive project-wide BH; both figures now reported. |
+| **C7** | lifespan replication unrun | **FIXED.** Run in Ziegler and GSE336399. Adult trajectories are flat in all three cohorts; the decline is a childhood-to-adult contrast. |
+| **D1/D2** | M12, M04 unmeasurable | **confirmed independently** in Ziegler (0.29, 0.40), a fourth cohort. |
+| **D6** | size-matched nulls | **fixed in code** (`validation/matched_null.py`). |
+| multiverse dev. 2 | RSV/pneumo curve unrun | **FIXED.** 448 specifications; P5 is 100% sign-stable in both, robust in pneumococcal. |
+| **A1** | no vaccine outcome | **unchanged and unfixable here.** |
+| **C1** | n = 39/39/74 | **unchanged and unfixable here.** |
+
+**Still open:** the lifespan arm of the multiverse grid (`PREREG_multiverse` §1); D4 scoring
+consistency between bulk and single cell; E6 functional corroboration; and the v2 panel exists
+but has never been tested on a cohort not used to build it.
