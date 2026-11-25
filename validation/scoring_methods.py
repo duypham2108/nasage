@@ -39,7 +39,23 @@ def pc1_of_set(X, full=None, idx=None):
     return v * (np.sign(r) if np.isfinite(r) and r != 0 else 1.0)
 
 
-def rank_score(X, full=None, idx=None, max_rank=1500):
+def gene_ranks(full):
+    """Descending rank of every gene within each sample; 1 = highest expressed.
+
+    The rank matrix depends only on `full`, so in a loop over many gene sets (a matched null,
+    a specification curve) it should be computed ONCE and passed to `rank_score(ranks=...)`
+    rather than recomputed per call. Doing it per call is what made the first matched-null
+    re-run take hours.
+    """
+    full = np.asarray(full)
+    n_samples, n_genes = full.shape
+    order = np.argsort(-full, axis=1, kind="stable")
+    ranks = np.empty_like(order)
+    ranks[np.arange(n_samples)[:, None], order] = np.arange(1, n_genes + 1)[None, :]
+    return ranks
+
+
+def rank_score(X, full=None, idx=None, max_rank=1500, ranks=None):
     """UCell-style: rank the set's genes against ALL genes in the same sample.
 
     `full` is samples x all-genes; `idx` the column positions of the set's genes within it.
@@ -49,15 +65,13 @@ def rank_score(X, full=None, idx=None, max_rank=1500):
     Without `full` this cannot be computed correctly and raises, rather than silently falling
     back to the broken within-set ranking.
     """
-    if full is None or idx is None:
-        raise ValueError("rank_score needs the full matrix; within-set ranking is invalid")
-    n_samples, n_genes = full.shape
+    if ranks is None:
+        if full is None or idx is None:
+            raise ValueError("rank_score needs the full matrix; within-set ranking is invalid")
+        ranks = gene_ranks(full)
+    elif idx is None:
+        raise ValueError("rank_score needs idx alongside a precomputed rank matrix")
     m = len(idx)
-    # descending rank of every gene within each sample: 1 = highest expressed
-    order = np.argsort(-full, axis=1, kind="stable")
-    ranks = np.empty_like(order)
-    rows = np.arange(n_samples)[:, None]
-    ranks[rows, order] = np.arange(1, n_genes + 1)[None, :]
     r = ranks[:, idx].astype(float)
     r = np.minimum(r, max_rank + 1)          # genes below the cutoff are tied at the cutoff
     u = r.sum(1) - m * (m + 1) / 2.0
