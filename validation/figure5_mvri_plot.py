@@ -1,10 +1,14 @@
 """Figure 5 (MVRI): the results that survived, plus Supplementary Figure S6 for the rest.
 
-MAIN  figure5_mvri.pdf       -- only results that passed: cell-type specificity (a, b), the
+**This is Figure 5 of the manuscript** (merged 2026-11-25). It writes figure5.pdf and
+figure5_supp.pdf. The earlier cilium-replication figure that held those names now writes
+figure5_cilium_replication.pdf from validation/figure5_plot.py; nothing of it was lost.
+
+MAIN  figure5.pdf            -- only results that passed: cell-type specificity (a, b), the
                                 robust age trajectory (c), the infection association (d), the
                                 specification curve that is its real defence (e), and the
                                 expression-matched specificity control (f).
-SUPP  figure5_mvri_supp.pdf  -- every failure: the evidence matrix (a), effective
+SUPP  figure5_supp.pdf       -- every failure: the evidence matrix (a), effective
                                 dimensionality (b), all trajectory slopes with matched-null
                                 status (c), the vaccine-engagement null with its positive
                                 control (d), the panel-v2 held-out failure (e), the full
@@ -276,13 +280,16 @@ if draws is not None and P5_PASS:
     ax.set_title("Random gene sets do not reproduce it\n(pneumococcal carriage)",
                  pad=6, loc="left")
 
-fig.savefig(OUT / "figure5_mvri.pdf", dpi=600)
-fig.savefig(OUT / "figure5_mvri.png", dpi=400)
-print("wrote", OUT / "figure5_mvri.pdf")
+fig.savefig(OUT / "figure5.pdf", dpi=600)
+fig.savefig(OUT / "figure5.png", dpi=400)
+print("wrote", OUT / "figure5.pdf")
 
 # ======================================================================== SUPPLEMENTARY S6
 AX_ROWS = [
-    ("Mucus barrier\nP5 · 11", [2, 2, 1, 2, 0]),
+    # "predicts infection" downgraded to partial 2026-11-25: the direction is consistent in all
+    # three cohorts, but P5 clears its expression-matched null in pneumococcal only
+    # (results/matched_null_rescore/). A full pass would overstate it.
+    ("Mucus barrier\nP5 · 11", [2, 2, 1, 1, 0]),
     ("Antigen presn.\nM06 · 15", [2, -1, 2, -1, -1]),
     ("Innate sensing\nM04 · 15", [0, -1, 1, -1, -1]),
     ("IgA support\nP4 · 10", [2, 2, 1, 0, 0]),
@@ -516,7 +523,7 @@ if mnr is not None and len(mnr):
     letter(ax, "g", dx=-0.30)
     ax.set_title("Why so many tests fail their null", pad=6, loc="left")
 
-fig.savefig(OUT / "figure5_mvri_supp.pdf", dpi=600)
-fig.savefig(OUT / "figure5_mvri_supp.png", dpi=400)
-print("wrote", OUT / "figure5_mvri_supp.pdf")
+fig.savefig(OUT / "figure5_supp.pdf", dpi=600)
+fig.savefig(OUT / "figure5_supp.png", dpi=400)
+print("wrote", OUT / "figure5_supp.pdf")
 print("P5 passes the matched null under all four scorers in:", P5_PASS or "no cohort")
