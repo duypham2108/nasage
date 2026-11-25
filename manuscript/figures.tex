@@ -1,0 +1,214 @@
+% ---------------------------------------------------------------------------
+% NasAge validation figures and captions
+%
+% Two separate stories, deliberately kept apart:
+%   Figure 5 / S5  -- mucociliary ageing: does the manuscript's own ageing signal
+%                     replicate in independent nasal cohorts?
+%   Figure 6 / S6  -- the mucosal programme panel and its relation to infection.
+%
+% Compile with:  pdflatex figures.tex
+% The PDFs live beside this file; no graphics path is needed.
+% ---------------------------------------------------------------------------
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=25mm]{geometry}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{amsmath}
+\usepackage{microtype}
+\usepackage[hidelinks]{hyperref}
+
+\captionsetup{font=small,labelfont=bf,justification=justified,singlelinecheck=false,
+              width=\textwidth,skip=8pt}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt}
+
+\renewcommand{\figurename}{Figure}
+
+\title{NasAge validation: Figures 5 and 6}
+\author{}
+\date{Generated 25 November 2026}
+
+\begin{document}
+\maketitle
+
+\noindent
+\textbf{Scope.} Every panel below is drawn from a results file produced by an analysis plan
+committed to version control \emph{before} the corresponding data were accessed. No panel
+recomputes a model statistic; the plotting scripts read results and arrange them. Deviations
+from each locked plan are dated in the corresponding \texttt{PREREG\_RESULTS.md}.
+
+\textbf{The two figures are separate stories and share no panel.} Figure 5 asks whether the
+manuscript's mucociliary ageing signal replicates in independent nasal cohorts. Figure 6 asks
+whether a panel of curated mucosal programmes is cell-type specific, changes with age, and
+relates to infection. The programme-specificity analysis appears in Figure 6 only.
+
+\clearpage
+
+% ===========================================================================
+% FIGURE 5
+% ===========================================================================
+\setcounter{figure}{4}
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\textwidth]{figure5.pdf}
+  \caption{\textbf{The mucociliary ageing signal replicates in an independent nasal cohort.}
+  \textbf{(a)} M02 mucociliary axoneme score against donor age in the replication cohort
+  ($n=120$ donors, bulk nasal brushing). Line and band are the ordinary least-squares fit
+  and its 95\% confidence interval. The Spearman $\rho$ is computed from the plotted points;
+  the adjusted $\beta$ is the age coefficient from the pre-registered model, which includes
+  sequencing depth as a covariate. Benjamini--Hochberg correction is over the declared family
+  of 13 modules, in which this test does not survive ($\mathrm{BH}=0.22$).
+  \textbf{(b)} The same analysis for CILIUM28, the gene set derived in the primary cohort.
+  Because CILIUM28 was defined on the primary data, this panel is a transfer test, not an
+  independent derivation.
+  \textbf{(c)} Both age coefficients against the distribution of 500 expression- and
+  size-matched random gene sets scored identically in the same cohort. Neither observed
+  coefficient is approached by any random set, and \textbf{0 of 500} random sets reach
+  $p<0.05$ against a nominal 5\%, so the association is specific to these gene sets rather
+  than a property of any set of comparably expressed genes.
+  \textbf{(d)} Interferon-stimulated gene score (M05) in children versus adults in Loske
+  2022, by epithelial cell type, as donor means. Horizontal bars are group medians.
+  Benjamini--Hochberg values are within the declared family; \emph{emp.\ p} is the
+  expression-matched empirical $p$, and an asterisk marks the combinations that clear it.
+  The ciliated contrast reaches $\mathrm{BH}=1\times10^{-3}$ but fails its matched null
+  ($\mathrm{emp.}\ p=0.076$) and is therefore not claimed.
+  \textbf{(e)} The same contrast for M06 MHC-I processing, which clears both the family-wise
+  correction and the matched null in all three cell types.
+  \textbf{Interpretation.} The childhood-to-adult contrast is the robust part of this
+  signal. Within adulthood the gradient is flat (Supplementary Figure S5a), so panels d and e
+  should not be read as a continuous decline across the lifespan.}
+  \label{fig:cilium}
+\end{figure}
+
+\clearpage
+
+% ===========================================================================
+% FIGURE 6
+% ===========================================================================
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\textwidth]{figure6.pdf}
+  \caption{\textbf{A cell-type-specific mucosal programme panel, and its relation to
+  infection.}
+  \textbf{(a)} Mean score of each curated programme in each epithelial family, across three
+  single-cell cohorts and 224 donor $\times$ cell-type units. The solid box marks the cell
+  type each programme was curated for; the dashed orange box marks the one programme (P6
+  viral entry factors) that scores highest somewhere else.
+  \textbf{(b)} Standardised mean difference between a programme's own cell type and the
+  other two, with 95\% confidence intervals. Five of six programmes are specific and the sign
+  is unanimous in every cohort. P6 is significantly \emph{lower} in its assigned cell type
+  ($\mathrm{SMD}=-1.66$) and is reported as misassigned rather than dropped.
+  Note that curated cell-type genes are expected to be enriched in that cell type, so the
+  magnitude of these SMDs overstates the achievement; the informative result is the one
+  programme that fails.
+  \textbf{(c)} M06 antigen presentation against age, 4--77 years, as donor $\times$ cell-type
+  means with per-family least-squares fits. The decline is present in all three cell types
+  ($\mathrm{BH}\le1\times10^{-4}$), is robust across 12 analytic specifications, and clears
+  its expression-matched null under all four scoring methods in basal and secretory cells
+  (three of four in ciliated). The slope is carried by the childhood-to-adult contrast:
+  within adulthood it is flat in all three cohorts tested.
+  \textbf{(d)} Odds ratio per standard deviation of baseline P5 mucin barrier score for
+  infection outcome, in three challenge cohorts, with a fixed-effect inverse-variance pooled
+  estimate. The direction is protective in all three. Only pneumococcal carriage clears its
+  own expression-matched null (panel f); RSV and NOVA do not, so the pooled estimate is shown
+  and not claimed.
+  \textbf{(e)} Specification curve for P5 in the RSV and pneumococcal cohorts: 16
+  specifications each, being four scoring methods $\times$ four covariate sets, ordered by
+  estimate. Filled points are $p<0.05$. All 32 specifications fall below $\mathrm{OR}=1$
+  (100\% sign stability in both cohorts). Sign stability of this kind is evidence that a
+  multiplicity correction can neither supply nor remove.
+  \textbf{(f)} The observed P5 effect in pneumococcal carriage against 500 expression- and
+  size-matched random gene sets scored identically. The empirical $p$ is 0.000 under every
+  one of the four scoring methods. By a rule fixed before any null was drawn, the reported
+  figure for each cohort is the \emph{worst} scorer, never the best.
+  \textbf{Limits that govern the whole figure.} No vaccine outcome exists in any reachable
+  cohort, so nothing here supports a claim about vaccine responsiveness; a live attenuated
+  influenza vaccine does not engage any of these programmes despite a working positive
+  control (Supplementary Figure S6d). Cohort sizes are 39, 39 and 74. P5's outcome
+  association does not survive if all 140 primary tests in the project are treated as one
+  family.}
+  \label{fig:mvri}
+\end{figure}
+
+\clearpage
+
+% ===========================================================================
+% SUPPLEMENTARY S5
+% ===========================================================================
+\renewcommand{\thefigure}{S5}
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\textwidth]{figure5_supp.pdf}
+  \caption{\textbf{Boundary conditions on the mucociliary ageing result.}
+  \textbf{(a)} The interferon score shows no gradient with age \emph{within} older adults, in
+  two independent cohorts ($\rho=-0.07$, $p=0.46$, $n=120$; $\rho=-0.16$, $p=0.32$, $n=39$).
+  Together with Figure 5d this localises the signal to the childhood-to-adult transition and
+  excludes a continuous adult decline.
+  \textbf{(b)} Detected genes per cell in CDKN2A$^+$ versus CDKN2A$^-$ cells. p16$^+$ status
+  tracks sequencing depth almost entirely: the medians differ by 1{,}377 genes per cell and
+  181 of 187 donors show the same direction. Senescence calls from droplet data are therefore
+  confounded with capture efficiency, which is why the corresponding cohort is withdrawn from
+  biological claims.
+  \textbf{(c)} Fraction of each module's genes detected in at least 5\% of cells, in four
+  cohorts and two chemistries. The dashed line is the pre-specified 60\% measurability gate.
+  M12 SASP falls at or near zero everywhere and is unmeasurable in droplet data; it is
+  retired from primary analysis rather than reported as a null.
+  \textbf{(d)} The three outcome-anchored tests with their pre-registered directions,
+  verdicts and the reason for each verdict. Predictions, directions and multiplicity were
+  fixed by a committed plan before the data were accessed.}
+  \label{fig:s5}
+\end{figure}
+
+\clearpage
+
+% ===========================================================================
+% SUPPLEMENTARY S6
+% ===========================================================================
+\renewcommand{\thefigure}{S6}
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\textwidth]{figure6_supp.pdf}
+  \caption{\textbf{Everything the programme panel failed.}
+  This figure exists so that Figure 6 is not read as a complete account.
+  \textbf{(a)} Evidence matrix: for each of five candidate axes, whether it is measurable,
+  cell-type specific, changes with age, relates to infection, and is engaged by a vaccine.
+  Filled green is a pass, small gold is partial, orange is a failure, a dash is not tested.
+  P5's infection entry is \emph{partial}, not a pass, because it clears its matched null in
+  one cohort of three.
+  \textbf{(b)} Declared axes versus the effective number of independent tests (Li \& Ji,
+  2005) in each cell type. Five declared axes behave as three to four, because PC1 carries
+  55--69\% of their variance, so Benjamini--Hochberg over the declared count is the wrong
+  correction in both directions.
+  \textbf{(c)} Age slopes for all five axes in all three cell types. A green marker denotes
+  the combinations that clear the expression-matched null. Seven of eleven tested
+  combinations reach $\mathrm{BH}<0.05$ yet fail that null: a general age drift that most
+  gene sets partially capture. Only antigen presentation is robust.
+  \textbf{(d)} Paired change in each programme after live attenuated influenza vaccine. The
+  M05 interferon positive control rises as expected, confirming the assay works on these
+  samples, while every mucosal programme is null. Three independent designs returned this
+  result. \textbf{This is the panel that prevents the figure set being titled as a validated
+  vaccine-readiness index.}
+  \textbf{(e)} Median pairwise correlation among the five modules that panel v2 collapsed
+  into one interferon axis, in the two cohorts the collapse was derived from and in three
+  held-out cohorts. Black rules mark the 95th percentile of random five-module subsets of the
+  same panel. The axis is 0.72--0.93 where it was derived and 0.34--0.50 where it was not,
+  beating chance in one held-out cohort of three. By the pre-registered rule, the collapse
+  does not replicate and v1 remains the panel of record.
+  \textbf{(f)} Empirical $p$ for every programme against its expression- and size-matched
+  null, in each cohort, under each of four scoring methods (mean $z$, median $z$, rank,
+  PC1 of set). Boxed cells clear the null. Specificity is scorer-dependent for most
+  programmes, which is why the reported figure is the worst scorer rather than the best.
+  \textbf{(g)} Fraction of \emph{random} expression-matched gene sets that reach model
+  $p<0.05$, against the nominal 0.05. The bulk challenge cohorts are close to nominal
+  (0.02--0.06), but the single-cell pseudobulk path is not (0.33 basal, 0.43 secretory,
+  0.76 ciliated). Where this fraction is high, a nominal $p$ from any gene set is
+  anticonservative and the matched null is the only valid test. This is the dominant-axis
+  problem measured directly, and it is the reason the trajectory results in panel c are
+  judged on their matched nulls rather than on their $p$-values.}
+  \label{fig:s6}
+\end{figure}
+
+\end{document}

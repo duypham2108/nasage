@@ -94,9 +94,9 @@ aw = pd.read_csv(R / "loske2022_v2" / "age_effects_with_null.csv")
 CTS = ["basal", "secretory", "ciliated"]
 
 # ================================================================ MAIN FIGURE 5
-fig = plt.figure(figsize=(180 * MM, 202 * MM))
-gs = GridSpec(3, 6, figure=fig, height_ratios=[1.0, 1.0, 1.15], hspace=0.52, wspace=1.25,
-              left=0.075, right=0.985, top=0.954, bottom=0.090)
+fig = plt.figure(figsize=(180 * MM, 132 * MM))
+gs = GridSpec(2, 6, figure=fig, height_ratios=[1.0, 1.0], hspace=0.60, wspace=1.25,
+              left=0.075, right=0.985, top=0.930, bottom=0.105)
 
 # -- a: M02 vs age
 ax = fig.add_subplot(gs[0, 0:2])
@@ -169,78 +169,19 @@ for k, (mod, col, lab, ltr, span) in enumerate((
     ax.set_title("Childhood contrast replicates (Loske 2022)" if k == 0
                  else "A second module, same direction", pad=6, loc="left")
 
-# -- f: programme x cell type, the specificity matrix
-cs = pd.read_csv(R / "celltype_spec" / "donor_celltype_scores.csv")
-cm = pd.read_csv(R / "celltype_spec" / "meta.csv").set_index("program")
-PROGS = ["P1_basal_progenitor_repair", "P3_secretory_antimicrobial", "P4_iga_transport",
-         "P5_mucin_barrier", "P7_ciliary_beat_machinery", "P6_entry_factor_availability"]
-PLAB = ["P1 basal\nprogenitor", "P3 secretory\nantimicrobial", "P4 IgA\ntransport",
-        "P5 mucin\nbarrier", "P7 ciliary\nbeat", "P6 entry\nfactors"]
-OWN = ["Basal", "Secretory", "Secretory", "Secretory", "Ciliated", "Ciliated"]
-FAMS = ["Basal", "Secretory", "Ciliated"]
-
-ax = fig.add_subplot(gs[2, 0:3])
-Mx = np.array([[cs.loc[cs.__fam == f, p].mean() for f in FAMS] for p in PROGS])
-im = ax.imshow(Mx, cmap="RdBu_r", vmin=-np.abs(Mx).max(), vmax=np.abs(Mx).max(),
-               aspect="auto")
-ax.set_xticks(range(3)); ax.set_xticklabels(FAMS, fontsize=6.5)
-ax.set_yticks(range(len(PROGS))); ax.set_yticklabels(PLAB, fontsize=5.8, linespacing=1.3)
-for i, p in enumerate(PROGS):
-    j = FAMS.index(OWN[i])
-    ok = cm.loc[p, "verdict"].startswith("SPECIFIC")
-    ax.add_patch(plt.Rectangle((j - .5, i - .5), 1, 1, fill=False,
-                               edgecolor=INK if ok else ORANGE,
-                               lw=1.6 if ok else 1.8,
-                               ls="-" if ok else (0, (2, 1.4)), zorder=5))
-ax.text(0.0, -0.17, "box = the cell type the programme was curated for; "
-                    "dashed orange = misassigned",
-        transform=ax.transAxes, fontsize=5.4, color=MUTED, ha="left", va="top")
-cb = fig.colorbar(im, ax=ax, fraction=0.035, pad=0.02)
-cb.set_label("mean programme score (z)", fontsize=5.6)
-cb.ax.tick_params(labelsize=5.4)
-letter(ax, "f", dx=-0.13, dy=1.14)
-ax.set_title("Programmes score highest in their own cell type", pad=6, loc="left")
-
-# -- g: specificity contrast, own cell type vs the other two
-ax = fig.add_subplot(gs[2, 3:6])
-ypos = np.arange(len(PROGS))[::-1]
-for yy, p in zip(ypos, PROGS):
-    r = cm.loc[p]
-    spec = r.verdict.startswith("SPECIFIC")
-    col = INK if spec else ORANGE
-    ax.plot([r.ci_lo, r.ci_hi], [yy, yy], color=col, lw=1.2, zorder=3,
-            solid_capstyle="butt")
-    ax.scatter([r.smd], [yy], s=22, facecolor=col, edgecolor="white", linewidth=0.5,
-               zorder=4)
-ax.axvline(0, color=GREY, lw=0.8, ls=(0, (2, 2)), zorder=1)
-ax.set_yticks(ypos)
-ax.set_yticklabels([])          # rows are in the same order as panel f
-ax.set_ylim(-0.9, len(PROGS) - 0.2)
-ax.tick_params(axis="y", length=0)
-ax.set_xlabel("own cell type − other two (SMD)")
-ax.set_xlim(-3.2, 7.6)
-for _yy, _p in zip(ypos, PROGS):
-    _r = cm.loc[_p]
-    ax.text(7.4, _yy, f"{_r.smd:+.2f}", fontsize=5.8, ha="right", va="center",
-            color=INK if _r.verdict.startswith("SPECIFIC") else ORANGE)
-ax.text(7.4, ypos[-1] - 0.58, "misassigned", fontsize=5.5, color=ORANGE, ha="right",
-        va="center")
-# Footer, not an in-axes annotation: at 0.99 this sat on top of the first data row.
-ax.text(0.0, -0.21, "rows as in f · 3 cohorts, 224 donor × cell-type units · "
-                    "sign unanimous\nin every programme and cohort",
-        transform=ax.transAxes, fontsize=5.4, color=MUTED, va="top", ha="left",
-        linespacing=1.5)
-letter(ax, "g", dx=-0.10, dy=1.14)
-ax.set_title("Five specific, one points the wrong way", pad=6, loc="left")
+# Panels f and g (programme x cell-type specificity) were REMOVED 2026-11-25: they
+# duplicated Figure 6a/b exactly. The specificity analysis belongs to the mucosal
+# programme story, so it lives in Figure 6 (validation/figure6_mvri_plot.py) only.
+# Figure 5 is the cilium-ageing replication and ends at panel e.
 
 fig.savefig(OUT / "figure5.pdf", dpi=600)
 fig.savefig(OUT / "figure5.png", dpi=400)
 print("wrote", OUT / "figure5.pdf")
 
 # ================================================================ SUPPLEMENTARY S5
-fig = plt.figure(figsize=(180 * MM, 210 * MM))
-gs = GridSpec(3, 2, figure=fig, height_ratios=[1.0, 0.85, 0.80], hspace=0.52, wspace=0.34,
-              left=0.085, right=0.985, top=0.952, bottom=0.042)
+fig = plt.figure(figsize=(180 * MM, 150 * MM))
+gs = GridSpec(2, 2, figure=fig, height_ratios=[1.0, 0.85], hspace=0.38, wspace=0.34,
+              left=0.085, right=0.985, top=0.940, bottom=0.060)
 
 # -- a: no gradient within older adults
 inner = GridSpecFromSubplotSpec(2, 1, subplot_spec=gs[0, 0], hspace=0.62)
@@ -359,64 +300,9 @@ ax.text(0.00, y - 0.055, "Predictions, direction and multiplicity were fixed by 
         transform=ax.transAxes, fontsize=5.5, va="top", ha="left", linespacing=1.6,
         color=MUTED, style="italic")
 
-# -- e: three-cohort forest for P5, with the NOVA caveat on its face
-fo = pd.read_csv(R / "nova" / "forest_three_cohort.csv")
-pr = pd.read_csv(R / "nova" / "primary.csv").iloc[0]
-ax = fig.add_subplot(gs[2, 0])
-ypos = np.arange(len(fo))[::-1]
-for yy, (_, r) in zip(ypos, fo.iterrows()):
-    pooled_row = r.cohort.startswith("pooled")
-    col = INK if pooled_row else (ORANGE if r.cohort.startswith("NOVA") else BLUE)
-    ax.plot([r.ci_lo, r.ci_hi], [yy, yy], color=col, lw=1.1, zorder=3,
-            solid_capstyle="butt")
-    ax.scatter([r.OR], [yy], s=30 if pooled_row else 20,
-               marker="D" if pooled_row else "o", facecolor=col, edgecolor="white",
-               linewidth=0.5, zorder=4)
-ax.axvline(1.0, color=GREY, lw=0.8, ls=(0, (2, 2)), zorder=1)
-ax.set_xscale("log")
-ax.set_xlim(0.02, 30.0)
-ax.set_xticks([0.05, 0.2, 1.0])
-ax.set_xticklabels(["0.05", "0.2", "1"])
-SHORTC = ["RSV", "pneumococcal", "NOVA", "pooled"]
-ax.set_yticks(ypos)
-ax.set_yticklabels(SHORTC, fontsize=6.2)
-ax.set_ylim(-0.8, len(fo) - 0.2)
-ax.set_xlabel("odds ratio per SD of baseline P5 (log scale)")
-ax.tick_params(axis="y", length=0)
-ax.spines["bottom"].set_bounds(0.02, 1.6)
-ax.xaxis.set_minor_locator(matplotlib.ticker.NullLocator())
-for yy, (_, r) in zip(ypos, fo.iterrows()):
-    col = ORANGE if r.cohort.startswith("NOVA") else INK
-    ax.text(28, yy, f"{r.OR:.2f} ({r.ci_lo:.2f}–{r.ci_hi:.2f})", fontsize=5.8,
-            color=col, ha="right", va="center")
-ax.text(28, ypos[2] - 0.42, "fails matched null (panel f)", fontsize=5.5, color=ORANGE,
-        ha="right", va="center")
-ax.text(28, ypos[3] - 0.46, f"$I^2$ = {pr.meta_I2:.0f}%", fontsize=5.8, color=MUTED,
-        ha="right", va="center")
-letter(ax, "e", dx=-0.19, dy=1.16)
-ax.set_title("Protective direction in three cohorts", pad=6, loc="left")
-
-# -- f: why the NOVA cohort cannot carry it
-nd = pd.read_csv(R / "nova" / "matched_null_draws.csv")
-ax = fig.add_subplot(gs[2, 1])
-obs = float(np.log(pr.OR))
-ax.hist(nd.logOR.values, bins=34, color=GREY, edgecolor="white", linewidth=0.3, zorder=2)
-ax.axvline(obs, color=ORANGE, lw=1.3, zorder=4)
-lo, hi = ax.get_ylim(); ax.set_ylim(lo, hi * 1.34)
-ax.annotate("P5 observed", xy=(obs, hi * 0.30), xytext=(obs - 0.30, hi * 0.52),
-            fontsize=6, color=ORANGE, ha="right", va="center",
-            arrowprops=dict(arrowstyle="-", lw=0.7, color=ORANGE))
-ax.set_xlabel("log odds ratio, expression-matched random gene sets")
-ax.set_ylabel("number of gene sets (of 500)")
-ax.text(0.02, 0.97,
-        f"empirical $p$ = {pr.empirical_p:.3f}  (FAIL)\n"
-        f"{pr.null_frac_p05 * 100:.1f}% of random sets reach $p$ < 0.05\n"
-        f"against a nominal 5%; 0/500 in both\n"
-        f"earlier cohorts",
-        transform=ax.transAxes, va="top", ha="left", fontsize=6, color=INK,
-        linespacing=1.6)
-letter(ax, "f", dx=-0.19, dy=1.16)
-ax.set_title("Specificity fails in the largest cohort", pad=6, loc="left")
+# Panels e and f (the P5 three-cohort forest and the NOVA matched null) were REMOVED
+# 2026-11-25: they duplicated Figure 6d and Supplementary S6f. P5 is a mucosal
+# programme result and belongs to the Figure 6 story, not to this ageing supplement.
 
 fig.savefig(OUT / "figure5_supp.pdf", dpi=600)
 fig.savefig(OUT / "figure5_supp.png", dpi=400)
