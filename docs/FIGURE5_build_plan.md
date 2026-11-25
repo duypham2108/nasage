@@ -196,3 +196,33 @@ types.
 Document: `manuscript/figure5.tex`, two pages (figure, then legend), compiled with tectonic
 from the figure directory. The §4 overlap question (Figure 4 already owns antigen
 presentation) and the §5 question (a cohort with a real outcome) remain open.
+
+---
+
+# Third pass, 2026-11-25
+
+Terminology: **"axis" is renamed "programme"** throughout the figure and legend. "Axis"
+was the slide deck's word and implied an independent dimension, which panel e contradicts
+(the three give 2.0 effective tests, PC1 73%).
+
+Panel a: the gene column now carries the gene count and the empirical P beside each
+programme name, and the three explanatory notes on the panel were removed to the legend.
+
+**Supplementary Table 1** (`validation/supp_table_genes.py` ->
+`figures/supp_table1.tex` + `supp_table1_gene_evidence.csv`) lists all 27 genes drawn in
+panel a with, for each: detection within its own programme's cells, the cell type that
+expresses it most widely **in this atlas** (computed per gene, types with >= 200 cells),
+a one-line function, and a literature reference. Seventeen references, all retrieved from
+PubMed in-session and checked against the record.
+
+Two things the table makes visible that the figure cannot:
+
+* **CD74, HLA-DRA and HLA-DRB1 peak in Macrophage and Monocyte, not epithelium**, even
+  though under 2% of the antigen-presentation programme's cells are myeloid. The MHC-II arm
+  of that programme is therefore carried by a small, non-epithelial minority of its cells.
+* **TGFB1 is detected mainly in B mem (0.28) and Plasma (0.21)**, at 0.06 overall, and
+  TNFSF13 at 0.06. Two of the IgA programme's three genes sit just above the floor and are
+  largely non-epithelial, which is the same thing the epithelium-only run showed by making
+  the programme unscorable.
+
+Both belong in the text as limitations of the IgA and MHC-II arms.

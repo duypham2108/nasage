@@ -238,15 +238,13 @@ def panel_a_sankey(ax, DET, CT, R):
                                    facecolor=col, edgecolor="none", zorder=4))
         frac = float(R.loc[a, "frac_measurable"])
         emp = float(R.loc[a, "empirical_p"])
-        verdict = (f"empirical $P$ {emp:.3f}*" if (ok and emp < 0.05) else
-                   (f"empirical $P$ {emp:.3f}" if ok else "below detection floor"))
+        verdict = (f"empirical $P$ = {emp:.3f}*" if (ok and emp < 0.05) else
+                   (f"empirical $P$ = {emp:.3f}" if ok else "below detection floor"))
         yc = Y(t0 + h / 2)
-        ax.text(XG0 - 0.012, yc + 0.046, a, fontsize=6.0, fontweight="bold",
+        ax.text(XG0 - 0.012, yc + 0.034, a, fontsize=6.2, fontweight="bold",
                 ha="right", va="center", color=INK if ok else MUTED)
-        ax.text(XG0 - 0.012, yc,
-                f"{ng[a]} genes scored, {frac:.0%} of the list detected",
-                fontsize=5.0, ha="right", va="center", color=MUTED)
-        ax.text(XG0 - 0.012, yc - 0.046, verdict, fontsize=5.2, ha="right", va="center",
+        ax.text(XG0 - 0.012, yc - 0.034, f"{ng[a]} genes · {verdict}",
+                fontsize=5.4, ha="right", va="center",
                 color=col if ok else MUTED,
                 fontweight="bold" if (ok and emp < 0.05) else "normal")
 
@@ -276,18 +274,13 @@ def panel_a_sankey(ax, DET, CT, R):
         ax.text(XC1 + 0.009, Y(t0 + h / 2), f"{SHORT_T.get(t, t)} ({n:,})", fontsize=5.5,
                 ha="left", va="center", color=INK)
 
-    for x, lab in [((XG0 + XG1) / 2, "genes"), ((XA0 + XA1) / 2, "axis"),
+    for x, lab in [((XG0 + XG1) / 2, "genes"), ((XA0 + XA1) / 2, "programme"),
                    ((XC0 + XC1) / 2, "cells it is scored in")]:
         ax.text(x, 1.035, lab, fontsize=6.2, ha="center", va="bottom", color=MUTED)
     # key for the two block styles
-    ax.text(0.015, -0.090, "only genes detected in ≥ 5% of the cells their axis is "
-                           "scored in are shown, and only those genes enter the score",
-            fontsize=5.2, va="center", ha="left", color=MUTED)
-    ax.text(0.70, -0.090, "cell nodes are cell counts, with a floor\n"
-                          "so small compartments stay visible",
-            fontsize=5.2, va="center", ha="left", color=MUTED)
+    # Note on the cell-node minimum height lives in the legend, not on the panel.
     ax.set_xlim(0, 1)
-    ax.set_ylim(-0.135, 1.02)
+    ax.set_ylim(-0.02, 1.02)
     ax.axis("off")
 
 
@@ -302,10 +295,7 @@ gs = GridSpec(3, 3, figure=fig, height_ratios=[1.15, 1.0, 1.02],
 
 # ---- a: genes -> axes -> cells (Sankey) ---------------------------------------
 axa = fig.add_subplot(gs[0, :])
-letter(axa, "a", dx=-0.030, dy=1.30)
-axa.text(0, 1.20, "What each measurable axis is built from and where it is read out: its "
-                  "detected genes, then the cells those genes are scored in",
-         transform=axa.transAxes, fontsize=7, va="bottom", ha="left", color=INK)
+letter(axa, "a", dx=-0.030, dy=1.08)
 panel_a_sankey(axa, DET, CT, R)
 
 # ---- b: donor-level trajectories, measurable axes only ------------------------
@@ -475,7 +465,7 @@ for j, name in enumerate(MEASURABLE):
     ax.set_title(f"{name}\nper cell $P$ < 1e−300   |   "
                  f"per donor $P$ = {r.KW_p_perdonor:.3f}", fontsize=6.3, pad=4)
     if j == 0:
-        ax.set_ylabel("axis score")
+        ax.set_ylabel("programme score")
         letter(ax, "a", dx=-0.17, dy=1.34)
 
 # ---- S b: matched nulls -------------------------------------------------------
@@ -532,7 +522,7 @@ for name, cx in grp:
     axc2.text(cx, -0.42, f"{name}\n{R.loc[name, 'frac_measurable']:.0%} measurable",
               transform=axc2.get_xaxis_transform(), fontsize=5.4, ha="center", va="top",
               color=INK if R.loc[name, "gate_pass"] else MUTED)
-axc2.set_title("Detection of every gene, within the cells its own axis is scored in",
+axc2.set_title("Detection of every gene, within the cells its own programme is scored in",
                fontsize=6.6, pad=4)
 
 # ---- S d: weight sensitivity --------------------------------------------------
@@ -609,7 +599,7 @@ axg2.set_xticklabels([SHORT[c].replace(" ", "\n") for c in C.columns], fontsize=
                      rotation=55, ha="right")
 axg2.set_yticks(range(len(C)))
 axg2.set_yticklabels([SHORT[c] for c in C.index], fontsize=5.8)
-axg2.set_title(f"Spearman between axes: {EFF['eff_li_ji']:.1f} effective\ntests of 5 "
+axg2.set_title(f"Spearman between programmes: {EFF['eff_li_ji']:.1f} effective\ntests of 5 "
                f"declared, PC1 {EFF['pc1_var_frac']:.0%}", pad=4, fontsize=6.4)
 
 figs.savefig(OUT / "figure5_maturation_supp.pdf", dpi=600)
