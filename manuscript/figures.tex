@@ -103,9 +103,24 @@ The ciliated contrast reaches $\mathrm{BH}=1\times10^{-3}$ but fails its matched
 \textbf{(e)} The same contrast for M06 MHC-I processing, which clears both the family-wise
 correction and the matched null in all three cell types.
 \par
-\textbf{Interpretation.} The childhood-to-adult contrast is the robust part of this signal.
-Within adulthood the gradient is flat in two independent cohorts (Figure S5a), so (d) and (e)
-must not be read as a continuous decline across the lifespan.}
+\textbf{Interpretation.} Two different questions are being asked here and they give different
+answers. The matched null in (c) asks whether \emph{these} gene sets behave unlike comparably
+expressed random sets, and the answer is unambiguous: 0 of 500. The family-wise correction
+asks whether this test stands out among the 13 modules examined, and there the M02 result does
+not survive ($\mathrm{BH}=0.22$). Both are reported because neither alone is the honest
+summary: the signal is specific to the gene set but modest relative to the family it was
+tested in. Panels (d) and (e) then locate where in life the signal sits. It is a
+childhood-to-adult step, not a gradient: within adulthood the slope is flat in two independent
+cohorts (Figure S5a). The one combination that reaches family-wise significance but fails its
+matched null (ciliated M05) is the useful negative here, because it shows the matched null is
+doing real work rather than rubber-stamping whatever the $p$-value says.
+\par
+\textbf{Conclusion.} The mucociliary and interferon ageing signal reproduces in independent
+nasal cohorts and is specific to the curated gene sets rather than to expression level. Its
+age structure is a childhood-to-adult difference, so it should be described as a maturational
+contrast and not as a continuous ageing clock. The M02 axoneme replication is supported as a
+specific effect but not as a family-wise significant one, and should be reported with both
+figures attached.}
 
 % ===========================================================================
 \figpage{figure6.pdf}
@@ -147,10 +162,34 @@ size-matched random gene sets scored identically. The empirical $p$ is 0.000 und
 of the four scoring methods. By a rule fixed before any null was drawn, the figure reported
 for each cohort is the \emph{worst} scorer, never the best.
 \par
+\textbf{Interpretation.} The figure separates into three claims of decreasing strength.
+Panels (a) and (b) establish the panel as a \emph{measurement instrument}: the programmes
+read out the cell types they were built for, with one exception that is reported rather than
+removed. Panel (c) is a reproducible biological association, and the strongest trajectory
+result in the project. Panels (d) to (f) are the weakest and most interesting: the direction
+of the P5--infection association is completely stable, surviving all 32 analytic
+specifications in two cohorts, yet stability and specificity are different properties and
+only pneumococcal carriage has both. The natural reading of (e) and (f) together is that
+P5 captures something real about susceptibility in at least one setting, and that the two
+other cohorts are consistent with it but cannot independently support it. Panel (f) is also
+where the reporting rule matters most: empirical $p$ for P5 ranges from 0.032 to 0.694 across
+scorers in NOVA, so a figure chosen after the fact could have been made to say almost
+anything. Fixing the worst-scorer rule in advance is what makes the pneumococcal result
+(0.000 under all four) credible.
+\par
 \textbf{Limits.} A live attenuated influenza vaccine does not engage any of these programmes,
-despite a working positive control (Figure S6d), so this panel is not a validated
-vaccine-readiness index. P5's outcome association does not survive if all 140 primary tests
-in the project are treated as a single family.}
+despite a working positive control (Figure S6d). P5's outcome association does not survive if
+all 140 primary tests in the project are treated as a single family. The cell-type
+specificity in (a) and (b) is partly definitional, since curated marker genes should be
+enriched where they were curated.
+\par
+\textbf{Conclusion.} The programme panel is a valid cell-type-resolved measurement of
+epithelial state, and M06 antigen presentation carries a reproducible, specificity-tested
+decline with age. The P5 mucin barrier axis is a stable correlate of reduced infection
+susceptibility, demonstrated as specific in pneumococcal carriage and consistent but
+unproven in RSV and influenza challenge. \textbf{This figure must not be presented as a
+mucosal vaccine readiness index}: no vaccine outcome was available in any reachable cohort,
+and the one vaccine exposure that could be tested produced a null against a working control.}
 
 % ===========================================================================
 \figpage{figure5_supp.pdf}
@@ -174,7 +213,22 @@ from primary analysis rather than reported as a null result.
 \par
 \textbf{(d)} The three outcome-anchored tests with their pre-registered directions, verdicts
 and the reason for each verdict. Predictions, direction and multiplicity were fixed by a
-committed plan before the data were accessed.}
+committed plan before the data were accessed.
+\par
+\textbf{Interpretation.} These four panels are boundary conditions, and each one closes off a
+reading of Figure 5 that would otherwise be available. Panel (a) removes the continuous
+ageing interpretation. Panel (b) removes the senescence interpretation: p16 status in droplet
+data is very largely a statement about how deeply a cell was sequenced, so any biology built
+on it is confounded at the measurement level. Panel (c) removes the possibility of reporting
+SASP as a negative finding, because a module detected in essentially no cells has not been
+tested at all, and a null from an unmeasurable module is uninformative rather than evidence
+of absence. Panel (d) records what was promised in advance, so the verdicts in the main
+figure can be checked against the plan rather than against the outcome.
+\par
+\textbf{Conclusion.} The ageing signal in Figure 5 is real but narrow: it is a
+childhood-to-adult contrast in measurable modules, not a senescence phenotype and not an
+adult gradient. Claims about cellular senescence from this data type require a depth-matched
+design, and claims about SASP require an assay with a lower detection floor.}
 
 % ===========================================================================
 \figpage{figure6_supp.pdf}
@@ -221,6 +275,27 @@ against the nominal 0.05. The bulk challenge cohorts are close to nominal (0.02-
 single-cell pseudobulk path is not (0.33 basal, 0.43 secretory, 0.76 ciliated). Where this
 fraction is high a nominal $p$ from any gene set is anticonservative and the matched null is
 the only valid test. This is the dominant-axis problem measured directly, and it is why the
-trajectories in (c) are judged on their matched nulls rather than on their $p$-values.}
+trajectories in (c) are judged on their matched nulls rather than on their $p$-values.
+\par
+\textbf{Interpretation.} The failures collected here are not independent; most of them have
+one cause, and panel (g) names it. A single dominant axis of expression explains 55--69\% of
+the variance across these modules, so almost any gene set partially tracks it. That is why
+five declared axes behave as three (b), why seven of eleven age associations are significant
+yet unspecific (c), and why collapsing five modules into a named interferon axis fails
+out of sample (e): those modules covary because nearly everything covaries, not because they
+share a regulatory programme. The severity is wildly uneven between data types. In the bulk
+challenge cohorts the test is close to nominal, which is what licenses the pneumococcal
+result in Figure 6f. In the single-cell pseudobulk path it is not, reaching 0.76 in ciliated
+cells, where a nominal $p$ carries almost no information and Benjamini--Hochberg over such
+$p$-values is close to meaningless. Panel (d) stands apart from this: the vaccine null is not
+a specificity failure but a straightforward negative result, and the positive control
+establishes that it is a real null rather than a failed assay.
+\par
+\textbf{Conclusion.} Gene-set age associations in nasal single-cell data must be validated
+against expression-matched nulls before they are believed; in these cohorts the nominal
+$p$-value is not a usable guide, and most associations that pass correction do not survive
+that check. Only M06 antigen presentation does. The v2 panel reorganisation is unsupported
+outside its derivation cohorts and v1 remains the panel of record. No mucosal programme is
+engaged by live attenuated influenza vaccination.}
 
 \end{document}
