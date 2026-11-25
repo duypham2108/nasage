@@ -170,7 +170,7 @@ ax.text(0.02, 0.98, "declines in all three cell types\n"
                     "cells (3 of 4 in ciliated)",
         transform=ax.transAxes, fontsize=5.4, color=INK, va="top", ha="left", linespacing=1.5)
 ax.text(0.0, -0.24, "the slope is carried by the childhood-to-adult contrast; within adulthood "
-                    "it is flat\n(three cohorts, Supplementary)",
+                    "it is flat\nin all three cohorts tested",
         transform=ax.transAxes, fontsize=5.2, color=MUTED, va="top", ha="left", linespacing=1.5)
 letter(ax, "c", dx=-0.26)
 ax.set_title("Antigen presentation declines, 4–77 y", pad=6, loc="left")
@@ -271,8 +271,8 @@ if draws is not None and P5_PASS:
                         "not one of 500 expression- and size-matched random\n"
                         "gene sets reproduces the effect, under any of the four\n"
                         "scoring methods. The pre-registered headline is the worst\n"
-                        "scorer, not the best. The cohorts where P5 does NOT clear\n"
-                        "its null are in Supplementary.",
+                        "scorer, not the best. P5 does NOT clear its null in the RSV\n"
+                        "or influenza cohorts.",
             transform=ax.transAxes, fontsize=5.2, color=MUTED, va="top", ha="left",
             linespacing=1.5)
     letter(ax, "f", dx=-0.26)

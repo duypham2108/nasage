@@ -1,0 +1,105 @@
+% Manuscript Figure 5, on its own, with its legend.
+%
+% The figure PDF is a validation output and lives outside this repository, so this document
+% refers to it by bare filename and must be compiled from the directory that holds it:
+%
+%   cp manuscript/figure5.tex D:/research/nasage_validation/results/mvri_audit_trim/figures/
+%   cd D:/research/nasage_validation/results/mvri_audit_trim/figures
+%   tectonic -X compile figure5.tex
+%
+\documentclass[11pt]{article}
+\usepackage[a4paper,margin=20mm]{geometry}
+\usepackage{graphicx}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{parskip}
+\setlength{\parindent}{0pt}
+\pagestyle{empty}
+
+\newcommand{\figpage}[1]{%
+  \thispagestyle{empty}%
+  \vspace*{\fill}%
+  \begin{center}\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{#1}\end{center}%
+  \vspace*{\fill}%
+  \clearpage}
+
+\begin{document}
+
+\figpage{figure5_maturation.pdf}
+
+{\large\textbf{Figure 5}\par}\vspace{2pt}
+{\textbf{Maturation of the mucosal interface across the lifespan.}\par}\vspace{8pt}
+
+\small
+
+Five candidate programmes of the mucosal interface --- mucus permeability, antigen presentation,
+innate sensing, IgA support and cytokine tone --- were scored in 148,978 nasal cells from
+52 donors spanning seven age bins, using the gene lists and cell subsets defined for each
+programme. Cells were labelled with \texttt{Cell\_type\_prediction\_level1/2}, which covers every
+cell in the object. Two programmes are absent from this figure: innate sensing and cytokine tone
+fail a measurability gate, with only 45\% and 54\% of their genes detected in at least 5\% of
+the cells they would be scored in, so a flat trajectory for either would mean \emph{not
+measured} rather than \emph{not different}. Within each remaining programme, genes below that same
+5\% detection floor are excluded from the score, so the programmes shown are built from 13 of 15,
+11 of 17 and 3 of 4 declared genes respectively.
+
+\textbf{a}, What each measurable programme is built from and where it is read out. Node and ribbon
+heights are flows: a programme is as tall as the number of genes that survive the detection
+floor, and that height is divided among cell types in proportion to the cells the programme is
+scored in. The composition is itself informative --- all three programmes are read out
+predominantly in Goblet and Secretory cells, and the antigen-presentation programme draws under
+2\% of its cells from the myeloid compartment. Cell nodes are drawn with a minimum height so
+that small compartments remain visible; the counts beside each node are exact. Supplementary Table 1 lists every gene shown here with its principal cell type in this
+atlas and a supporting reference.
+
+\textbf{b}, Donor-level trajectories. Each point is one donor, coloured by age bin, and the
+bar is the bin median; $n$ per bin is printed on the axis. Scores are donor means of the
+per-gene $z$ within each programme's own cell subset. The headline statistic is the empirical
+$P$ against 500 expression- and size-matched random gene sets, scored and tested identically
+at donor level: antigen presentation $P < 0.002$ (0 of 500 null sets reached the observed
+statistic) and IgA support $P = 0.002$ both clear it, while mucus permeability does not
+($P = 0.066$). Benjamini--Hochberg values across the five programmes tested are given in
+parentheses but should not be read as the result: because the three source datasets in this
+cohort are confounded with age bin, 52--75\% of \emph{random} matched gene sets reach a
+nominal donor-level $P < 0.05$, so the nominal and BH values are not calibrated here and the
+matched-null comparison is the only valid test.
+
+\textbf{c}, Spearman correlation of donor score with age-bin rank within two age windows,
+with 95\% bootstrap confidence intervals. The maturation is concentrated between birth and
+young childhood, where all three programmes rise steeply (mucus permeability $\rho = +0.56$,
+$P = 0.003$; antigen presentation $\rho = +0.81$, $P < 0.001$; IgA support $\rho = +0.80$,
+$P < 0.001$; $n = 26$ donors). After childhood, antigen presentation and IgA support decline
+($\rho = -0.55$, $P = 0.003$ and $\rho = -0.42$, $P = 0.035$) while mucus permeability does
+not change ($\rho = +0.07$, $P = 0.75$).
+
+\textbf{d}, Mean score by cell type within each programme's own subset. Dot colour is the mean
+per-gene $z$ in that group and dot size the number of cells.
+
+\textbf{e}, The three measurable programmes combined into a single score, using the declared programme
+signs renormalised over the surviving programmes. The combined score rises from the neonatal period
+to a childhood maximum and falls thereafter. The three programmes are not three independent
+measurements: they give 2.0 effective tests by the Li and Ji criterion, with the first
+principal component carrying 73\% of the variance and pairwise Spearman correlations of
+$+0.53$ to $+0.70$.
+
+\vspace{6pt}
+\textbf{Interpretation.} The mucosal interface is not static across the lifespan, and the
+part of its trajectory that the data support most strongly is its construction rather than
+its decline: between birth and young childhood, antigen presentation and IgA support rise
+steeply and both beat expression-matched random gene sets. This is consistent with Figure 4,
+where antigen-presentation and interferon programmes peak in childhood, and it places that
+peak in a broader interface context by adding the secretory and IgA arms.
+
+\textbf{Limitations.} Three bear directly on how far this figure can be read. First, the
+decline after childhood cannot be separated from batch: the Elderly bin is four-fifths drawn
+from one source dataset and the Adult bin entirely from another, and 10x chemistry tracks
+that split, so the downward arm of panels c and e is confounded by design. Second, sequencing
+depth correlates with every programme score ($\rho = +0.52$ to $+0.55$) and accounts for part of
+the coherence between programmes (mean pairwise $\rho$ falls from $+0.59$ to $+0.40$ once depth is
+removed); it is not, however, confounded with age ($\rho = +0.10$, $P = 0.49$), and the age
+$P$-values are unchanged by adjusting for it. Third, no vaccine or infection outcome exists in
+this cohort, so these programmes describe the maturation of the interface and cannot speak to
+mucosal vaccine responsiveness.
+
+\end{document}
