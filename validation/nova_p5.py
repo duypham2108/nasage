@@ -112,6 +112,14 @@ print(f"genes after collapsing probes: {E.shape[0]}")
 Z = E.sub(E.mean(1), axis=0).div(E.std(1, ddof=1), axis=0)
 Z = Z.dropna(how="any")
 
+# Dump the symbol-level matrix for the specification curve (docs/PREREG_multiverse.md) and
+# exit before any model. Opt-in, so the locked analysis path is unchanged.
+if __import__("os").environ.get("NASAGE_DUMP_EXPR") == "1":
+    OUT.mkdir(parents=True, exist_ok=True)
+    E.to_csv(OUT / "expr_symbols.csv.gz")
+    print("dumped", OUT / "expr_symbols.csv.gz", E.shape)
+    sys.exit(0)
+
 # ------------------------------------------------------------------ coverage, before any model
 cov = []
 for name, p in PROGRAMS.items():
