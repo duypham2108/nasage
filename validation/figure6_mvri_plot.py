@@ -1,14 +1,13 @@
-"""Figure 5 (MVRI): the results that survived, plus Supplementary Figure S6 for the rest.
+"""Figure 6 (MVRI): the results that survived, plus Supplementary Figure S6 for the rest.
 
-**This is Figure 5 of the manuscript** (merged 2026-11-25). It writes figure5.pdf and
-figure5_supp.pdf. The earlier cilium-replication figure that held those names now writes
-figure5_cilium_replication.pdf from validation/figure5_plot.py; nothing of it was lost.
+**This is Figure 6 of the manuscript.** Figure 5 remains the cilium-ageing replication
+(validation/figure5_plot.py), which keeps figure5.pdf / figure5_supp.pdf.
 
-MAIN  figure5.pdf            -- only results that passed: cell-type specificity (a, b), the
+MAIN  figure6.pdf            -- only results that passed: cell-type specificity (a, b), the
                                 robust age trajectory (c), the infection association (d), the
                                 specification curve that is its real defence (e), and the
                                 expression-matched specificity control (f).
-SUPP  figure5_supp.pdf       -- every failure: the evidence matrix (a), effective
+SUPP  figure6_supp.pdf       -- every failure: the evidence matrix (a), effective
                                 dimensionality (b), all trajectory slopes with matched-null
                                 status (c), the vaccine-engagement null with its positive
                                 control (d), the panel-v2 held-out failure (e), the full
@@ -23,7 +22,7 @@ with no vaccine panel reads as selective reporting.
 Written as a SEPARATE file from figure5_plot.py; the original Figure 5 is untouched.
 Every panel reads a results file produced by a plan committed before the data were accessed.
 
-Usage: python validation/figure5_mvri_plot.py <results_dir> <out_dir>
+Usage: python validation/figure6_mvri_plot.py <results_dir> <out_dir>
 """
 import sys
 from pathlib import Path
@@ -280,9 +279,9 @@ if draws is not None and P5_PASS:
     ax.set_title("Random gene sets do not reproduce it\n(pneumococcal carriage)",
                  pad=6, loc="left")
 
-fig.savefig(OUT / "figure5.pdf", dpi=600)
-fig.savefig(OUT / "figure5.png", dpi=400)
-print("wrote", OUT / "figure5.pdf")
+fig.savefig(OUT / "figure6.pdf", dpi=600)
+fig.savefig(OUT / "figure6.png", dpi=400)
+print("wrote", OUT / "figure6.pdf")
 
 # ======================================================================== SUPPLEMENTARY S6
 AX_ROWS = [
@@ -523,7 +522,7 @@ if mnr is not None and len(mnr):
     letter(ax, "g", dx=-0.30)
     ax.set_title("Why so many tests fail their null", pad=6, loc="left")
 
-fig.savefig(OUT / "figure5_supp.pdf", dpi=600)
-fig.savefig(OUT / "figure5_supp.png", dpi=400)
-print("wrote", OUT / "figure5_supp.pdf")
+fig.savefig(OUT / "figure6_supp.pdf", dpi=600)
+fig.savefig(OUT / "figure6_supp.png", dpi=400)
+print("wrote", OUT / "figure6_supp.pdf")
 print("P5 passes the matched null under all four scorers in:", P5_PASS or "no cohort")

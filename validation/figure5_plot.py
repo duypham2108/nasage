@@ -1,11 +1,7 @@
-"""Compose the cilium-ageing replication figure and its supplement.
+"""Compose Figure 5 (main) and Supplementary Figure S5.
 
-**Renamed 2026-11-25.** This script used to write figure5.pdf / figure5_supp.pdf. Figure 5 of
-the manuscript is now the mucosal-vaccine-readiness figure (validation/figure5_mvri_plot.py),
-so this one writes figure5_cilium_replication.pdf / _supp.pdf instead. The content is
-unchanged and nothing was deleted; only the output filenames moved, so the two scripts cannot
-overwrite each other.
-
+This is the cilium-ageing replication figure and it keeps the Figure 5 slot. The
+mucosal-vaccine-readiness figure is Figure 6 (validation/figure6_mvri_plot.py).
 
 Every panel is drawn from a file in D:\\research\\nasage_validation\\results\\, produced by
 a plan that was committed before the data were accessed. Nothing here recomputes a model
@@ -239,9 +235,9 @@ ax.set_title("Five specific, one points the wrong way", pad=6, loc="left")
 # Renamed 2026-11-25. Figure 5 of the manuscript is now the mucosal-vaccine-readiness figure
 # (validation/figure5_mvri_plot.py), which writes figure5.pdf. This cilium-replication figure
 # keeps its own name so the two scripts cannot silently overwrite each other.
-fig.savefig(OUT / "figure5_cilium_replication.pdf", dpi=600)
-fig.savefig(OUT / "figure5_cilium_replication.png", dpi=400)
-print("wrote", OUT / "figure5_cilium_replication.pdf")
+fig.savefig(OUT / "figure5.pdf", dpi=600)
+fig.savefig(OUT / "figure5.png", dpi=400)
+print("wrote", OUT / "figure5.pdf")
 
 # ================================================================ SUPPLEMENTARY S5
 fig = plt.figure(figsize=(180 * MM, 210 * MM))
@@ -424,6 +420,6 @@ ax.text(0.02, 0.97,
 letter(ax, "f", dx=-0.19, dy=1.16)
 ax.set_title("Specificity fails in the largest cohort", pad=6, loc="left")
 
-fig.savefig(OUT / "figure5_cilium_replication_supp.pdf", dpi=600)
-fig.savefig(OUT / "figure5_cilium_replication_supp.png", dpi=400)
-print("wrote", OUT / "figure5_cilium_replication_supp.pdf")
+fig.savefig(OUT / "figure5_supp.pdf", dpi=600)
+fig.savefig(OUT / "figure5_supp.png", dpi=400)
+print("wrote", OUT / "figure5_supp.pdf")
