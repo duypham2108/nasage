@@ -70,6 +70,24 @@ def module_coverage(adata, modules_mapped: dict, applicability: dict, cell_types
     return cov
 
 
+def _n_detected(M) -> np.ndarray:
+    """Per-cell count of detected genes, without materialising a boolean copy.
+
+    ``(M > 0).sum(1)`` builds a second sparse matrix and reduces it in int64, which
+    costs ~12 bytes per stored element -- several GB on a large cohort. For CSR with
+    no explicit zeros the row lengths already give the answer; otherwise fall back to
+    counting the nonzero values per row.
+    """
+    if sp.issparse(M):
+        M = M.tocsr() if not sp.isspmatrix_csr(M) else M
+        lens = np.diff(M.indptr)
+        if M.nnz and not (M.data == 0).any():
+            return lens.astype(np.int64)
+        rows = np.repeat(np.arange(M.shape[0]), lens)
+        return np.bincount(rows[M.data != 0], minlength=M.shape[0]).astype(np.int64)
+    return np.asarray((np.asarray(M) > 0).sum(1)).ravel()
+
+
 def score_modules(adata, modules_mapped: dict, layer=None, max_rank=MAX_RANK,
                   n_jobs=1) -> list[str]:
     """UCell scores for multi-gene modules, plus single-gene and ratio features.
@@ -90,7 +108,7 @@ def score_modules(adata, modules_mapped: dict, layer=None, max_rank=MAX_RANK,
     cols = [f"{m}_UCell" for m in sigs]
     gpos = {g: i for i, g in enumerate(adata.var_names)}
     counts = adata.X if layer is None else adata.layers[layer]
-    adata.obs["nis_n_genes"] = np.asarray((counts > 0).sum(1)).ravel()
+    adata.obs["nis_n_genes"] = _n_detected(counts)
     lib = np.maximum(np.asarray(counts.sum(1)).ravel(), 1)
     for mod, gene in SINGLE_GENE_FEATURES.items():
         if gene not in gpos:

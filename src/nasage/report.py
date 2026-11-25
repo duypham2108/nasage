@@ -39,7 +39,8 @@ def _write(outdir, *, design, coverage, eligibility, omnibus, contrasts,
 
     lines = [HEADER, f"\nDataset: **{scenario_label}**\n",
              f"- donors: {design.shape[0]}",
-             f"- primary family: {len(prim)} estimable (module, cell type) combinations",
+             f"- primary family: {len(prim)} estimable (module, cell type) combinations"
+             f" in {', '.join(sorted(set(prim.cell_type.astype(str)))) or 'none'}",
              f"- not estimable (too few donors with enough cells): {len(nonest)}",
              f"- flagged poorly measurable and excluded: {len(poor)}", ""]
     lines.append("## Age-associated differences (BH-FDR < 0.05 in the primary family)\n")
