@@ -226,3 +226,23 @@ Two things the table makes visible that the figure cannot:
   the programme unscorable.
 
 Both belong in the text as limitations of the IgA and MHC-II arms.
+
+---
+
+# Standing decision, 2026-11-25
+
+**Figure 5 uses all cell types, not epithelium only.** The figure and Supplementary Table 1
+are built from `results/mvri_audit_trim/` (`scope = all`). The epithelium-only run in
+`results/mvri_audit_epi/` is a sensitivity analysis and is not to be substituted for it.
+
+This is a scope decision, not a default, and it has a consequence that belongs in the text:
+the non-epithelial cells carry two of the three programmes.
+
+* **IgA support exists only with Plasma and B mem included.** Restricted to epithelium, 2 of
+  its 4 genes fall below the 5% detection floor and the programme cannot be scored.
+* **The MHC-II arm of antigen presentation is read out in myeloid cells.** CD74, HLA-DRA and
+  HLA-DRB1 reach their highest detection in Macrophage and Monocyte, which are under 2% of
+  that programme's cells.
+
+Supplementary Table 1 carries the per-gene evidence for both and stays as the gene-level
+reference for panel a.
