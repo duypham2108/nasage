@@ -121,6 +121,19 @@ It is admissible only under strict conditions, because it is a redesign:
 | **A1** | no vaccine outcome | **unchanged and unfixable here.** |
 | **C1** | n = 39/39/74 | **unchanged and unfixable here.** |
 
-**Still open:** the lifespan arm of the multiverse grid (`PREREG_multiverse` §1); D4 scoring
-consistency between bulk and single cell; E6 functional corroboration; and the v2 panel exists
-but has never been tested on a cohort not used to build it.
+**Still open:** E6 functional corroboration (needs lab work, not analysis).
+
+---
+
+# Progress, 2026-11-25 (second pass)
+
+| Item | Status |
+|---|---|
+| lifespan arm of the multiverse grid | **FIXED.** `validation/multiverse_lifespan.py`; M06 is robust in all three cell types. |
+| **D4** scoring consistency | **FIXED, and it found a bug.** The bulk and single-cell paths were compared directly for the first time and correlated at only 0.198. The cause was my own `sc_rank`, which ranked a programme's genes *against each other* instead of against the transcriptome — a statistic carrying r = 0.000 with a known synthetic gradient. Replaced with the standard UCell statistic (`validation/scoring_methods.py`) and 444 specifications re-run; three published claims withdrawn. |
+| **v2 panel out of sample** | **TESTED AND FAILED.** `results/panel_v2_heldout/`. The A01 interferon axis correlates 0.34–0.50 in three held-out cohorts against 0.72–0.93 in the two it was derived from, and beats a random five-module subset in only one of three. v1 remains the panel of record. |
+| matched nulls under the corrected scorer | see `results/matched_null_rescore/` |
+
+**Two of these are negative results about my own methods**, and both are kept: the scorer bug is
+documented in the file that replaced it, and v2 is retained in the repository marked unsupported
+rather than quietly deleted.
